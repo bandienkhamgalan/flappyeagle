@@ -107,7 +107,6 @@ class Ui_mainWindow(object):
         self.circuitDiagram.setMinimumSize(QtCore.QSize(500, 500))
         self.circuitDiagram.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.circuitDiagram.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.circuitDiagram.setRenderHints(QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
         self.circuitDiagram.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.circuitDiagram.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self.circuitDiagram.setObjectName("circuitDiagram")
