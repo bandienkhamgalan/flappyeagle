@@ -15,11 +15,11 @@ class MainModel:
 	def addComponent(self, component, x=None, y=None):
 		if x is None and y is None:
 			component.position = self.freePosition()
-		elif x is None or y is None or self.breadboard[x][y] is not None:
-			return False
+		elif x is not None and y is not None and self.breadboard[x][y] is not None:
+			component.position = (x, y)
 
 		if component.position is not None:
-			# TODO: set component position to x and y
+			component.position
 			self.breadboard[component.position[0]][component.position[1]] = component
 			self.components.append(component)
 			component.id = self.counter
@@ -29,7 +29,6 @@ class MainModel:
 			return True
 		
 		return False
-
 	# TODO: CONNECTION CODE 
 
 	def freePosition(self):

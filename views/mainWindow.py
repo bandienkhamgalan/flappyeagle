@@ -103,10 +103,11 @@ class Ui_mainWindow(object):
         spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.toolbox.addItem(spacerItem2)
         self.horizontalLayout.addLayout(self.toolbox)
-        self.circuitDiagram = QtWidgets.QGraphicsView(self.centralwidget)
+        self.circuitDiagram = CircuitDiagramView(self.centralwidget)
         self.circuitDiagram.setMinimumSize(QtCore.QSize(500, 500))
         self.circuitDiagram.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.circuitDiagram.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.circuitDiagram.setRenderHints(QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
         self.circuitDiagram.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.circuitDiagram.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         self.circuitDiagram.setObjectName("circuitDiagram")
@@ -156,7 +157,7 @@ class Ui_mainWindow(object):
 
     def retranslateUi(self, mainWindow):
         _translate = QtCore.QCoreApplication.translate
-        mainWindow.setWindowTitle(_translate("mainWindow", "FlappyBird"))
+        mainWindow.setWindowTitle(_translate("mainWindow", "FlappyEagle"))
         self.build.setText(_translate("mainWindow", "Build"))
         self.run.setText(_translate("mainWindow", "Run"))
         self.toolboxComponents.setTitle(_translate("mainWindow", "Components"))
@@ -177,6 +178,7 @@ class Ui_mainWindow(object):
         self.actionSave.setText(_translate("mainWindow", "Save"))
         self.actionClose.setText(_translate("mainWindow", "Close"))
 
+from views.CircuitDiagramView import CircuitDiagramView
 
 if __name__ == "__main__":
     import sys

@@ -23,7 +23,7 @@
    </size>
   </property>
   <property name="windowTitle">
-   <string>FlappyBird</string>
+   <string>FlappyEagle</string>
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
@@ -273,7 +273,7 @@
        </layout>
       </item>
       <item>
-       <widget class="QGraphicsView" name="circuitDiagram">
+       <widget class="CircuitDiagramView" name="circuitDiagram">
         <property name="minimumSize">
          <size>
           <width>500</width>
@@ -285,6 +285,9 @@
         </property>
         <property name="horizontalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOff</enum>
+        </property>
+        <property name="renderHints">
+         <set>QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform|QPainter::TextAntialiasing</set>
         </property>
         <property name="resizeAnchor">
          <enum>QGraphicsView::NoAnchor</enum>
@@ -371,6 +374,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>CircuitDiagramView</class>
+   <extends>QGraphicsView</extends>
+   <header>views.CircuitDiagramView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
