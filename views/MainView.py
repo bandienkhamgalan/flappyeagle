@@ -16,6 +16,7 @@ class CursorState(Enum):
 	WireDragging = 2
 	NewComponentDragging = 3
 	ExistingComponentDragging = 4
+	Delete = 5
 
 class MainView(QMainWindow):
 	def __init__(self, model, controller):
@@ -42,6 +43,14 @@ class MainView(QMainWindow):
 		#### SETUP TOOLBAR
 		self.ui.wireMode.setCheckable(True)
 		self.ui.wireMode.clicked.connect(self.toggleWireMode)
+		
+		
+		self.ui.deleteMode.setCheckable(True)
+		self.ui.deleteMode.clicked.connect(self.toggleDeleteMode)
+		
+		self.ui.selectMode.setCheckable(True)
+		self.ui.selectMode.clicked.connect(self.toggleSelectMode)
+		self.ui.selectMode.setChecked(True)
 
 		self.ui.newBattery.componentType = ComponentType.Battery
 		self.ui.newBattery.setIcon(QIcon(QPixmap("assets/battery.png")))
@@ -73,11 +82,31 @@ class MainView(QMainWindow):
 			QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
 		elif self.cursorState is CursorState.ExistingComponentDragging or self.cursorState is CursorState.NewComponentDragging:
 			QApplication.setOverrideCursor(QCursor(Qt.ClosedHandCursor))
+		elif self.cursorState is CursorState.Delete:
+			QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
 		else:
 			QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
 
 	def toggleWireMode(self):
+		self.ui.deleteMode.setChecked(False)
+		self.ui.selectMode.setChecked(False)
 		self.cursorState = CursorState.Wire if self.ui.wireMode.isChecked() else CursorState.Select
+		if self.cursorState is CursorState.Select :
+			self.ui.selectMode.setChecked(True)
+		self.updateCursor()
+		
+	def toggleDeleteMode(self):
+		self.ui.wireMode.setChecked(False)
+		self.ui.selectMode.setChecked(False)
+		self.cursorState = CursorState.Delete if self.ui.deleteMode.isChecked() else CursorState.Select
+		if self.cursorState is CursorState.Select :
+			self.ui.selectMode.setChecked(True)
+		self.updateCursor()
+		
+	def toggleSelectMode(self):
+		self.ui.wireMode.setChecked(False)
+		self.ui.deleteMode.setChecked(False)
+		self.cursorState = CursorState.Select if self.ui.selectMode.isChecked() else CusrsorState.Select
 		self.updateCursor()
 
 	def circuitDiagramMousePress(self, event):
@@ -97,6 +126,9 @@ class MainView(QMainWindow):
 				self.wirePath.append(event.index)
 			else:
 				print("invalid wire start")
+		elif self.cursorState is CursorState.Delete:
+			if self.model.breadboard[event.index[0]][event.index[1]] is not None:
+				self.model.removeComponent(self.model.breadboard[event.index[0]][event.index[1]])
 		self.updateCursor()
 	
 	def circuitDiagramMouseMove(self, event):
