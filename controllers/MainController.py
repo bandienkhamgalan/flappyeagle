@@ -35,7 +35,7 @@ class MainController():
 		currentEnteringDirection = enteringDirection
 		totalVoltage = 0
 		totalResistance = 0
-		closed = True
+		switchClosed = True
 		while True:
 			exitingConnections = currentComponent.exitingConnections(currentEnteringDirection)
 
@@ -58,7 +58,7 @@ class MainController():
 						return False	
 
 				if currentComponent.type is ComponentType.Button or currentComponent.type is ComponentType.Switch and not currentComponent.closed:
-					closed = False
+					switchClosed = False
 
 				visitedComponents.append(currentComponent)
 				currentComponent.visited = True
@@ -74,7 +74,7 @@ class MainController():
 				# invalid circuit
 				return False
 
-		if closed:
+		if switchClosed:
 			seriesCurrent = totalVoltage / totalResistance
 			for currentComponent in visitedComponents:
 				currentComponent.current = seriesCurrent

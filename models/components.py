@@ -25,12 +25,12 @@ class ComponentType(IntEnum):
 
 class Component:
 	def __init__(self, componentType=None):
-		self.id = -1
+		self.id = None
+		self.type = componentType
 		self.voltage = 0.0
 		self.current = 0.0
 		self.position = (None, None)
 		self.connections = [None for _ in range(4)]
-		self.type = componentType
 
 	def __str__(self):
 		toReturn = "%s component with %g volts and %g amperes at position (%d, %d)" % (self.type, self.voltage, self.current, self.position[0], self.position[1])
@@ -46,6 +46,14 @@ class Component:
 
 	def numberOfConnections(self):
 		return sum([1 for x in self.connections if x is not None and isinstance(x.type, ComponentType)])
+
+	# remove references to self in neighbors & set connections to None
+	def removeConnections(self):
+		for direction in Direction:
+			neighbor = self.connections[direction]
+			if neighbor is not None:
+				neighbor.connections[direction.opposite()] = None
+			self.connections[direction] = None
 
 	def exitingConnections(self, enteringDirection):
 		toReturn = []

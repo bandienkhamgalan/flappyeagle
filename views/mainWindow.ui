@@ -121,7 +121,7 @@
            </property>
            <layout class="QGridLayout" name="toolboxComponentsGrid" rowstretch="0,0,0,0,0">
             <item row="2" column="2">
-             <widget class="QToolButton" name="newSwitch">
+             <widget class="DraggableComponentButton" name="newSwitch">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -140,7 +140,7 @@
              </widget>
             </item>
             <item row="4" column="1">
-             <widget class="QToolButton" name="newVoltmeter">
+             <widget class="DraggableComponentButton" name="newVoltmeter">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -159,7 +159,7 @@
              </widget>
             </item>
             <item row="4" column="0">
-             <widget class="QToolButton" name="newAmmeter">
+             <widget class="DraggableComponentButton" name="newAmmeter">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -178,7 +178,7 @@
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QToolButton" name="newBattery">
+             <widget class="DraggableComponentButton" name="newBattery">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -197,7 +197,7 @@
              </widget>
             </item>
             <item row="4" column="2">
-             <widget class="QToolButton" name="newResistor">
+             <widget class="DraggableComponentButton" name="newResistor">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -216,7 +216,7 @@
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QToolButton" name="newLED">
+             <widget class="DraggableComponentButton" name="newLED">
               <property name="minimumSize">
                <size>
                 <width>75</width>
@@ -279,6 +279,9 @@
           <width>500</width>
           <height>500</height>
          </size>
+        </property>
+        <property name="mouseTracking">
+         <bool>true</bool>
         </property>
         <property name="verticalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOff</enum>
@@ -376,6 +379,11 @@
    <class>CircuitDiagramView</class>
    <extends>QGraphicsView</extends>
    <header>views.CircuitDiagramView</header>
+  </customwidget>
+  <customwidget>
+   <class>DraggableComponentButton</class>
+   <extends>QToolButton</extends>
+   <header>views.DraggableComponentButton</header>
   </customwidget>
  </customwidgets>
  <resources/>
