@@ -14,7 +14,6 @@ class MainModel(QObject):
 		self.counter = 0
 		self.breadboard = [[None for _ in range(self.gridSize)] for _ in range(self.gridSize)]
 		self.components = []
-		self.freePositions = list(itertools.product(range(self.gridSize),range(self.gridSize)))
 
 	# supply zero or both indices, otherwise fails
 	def addComponent(self, component):
@@ -24,7 +23,6 @@ class MainModel(QObject):
 			self.counter += 1
 			self.breadboard[component.position[0]][component.position[1]] = component
 			self.components.append(component)
-			self.freePositions.remove(component.position)
 
 			self.modelChanged.emit()
 			return True
@@ -35,7 +33,6 @@ class MainModel(QObject):
 		if component in self.components:
 			component.removeConnections()
 			self.breadboard[component.position[0]][component.position[1]] = None
-			self.freePositions.append(component.position)
 			self.components.remove(component)
 
 			self.modelChanged.emit()	
@@ -53,40 +50,3 @@ class MainModel(QObject):
 
 	def validIndex(self, index):
 		return index is not None and len(index) == 2 and index[0] >= 0 and index[0] < self.gridSize and index[1] >= 0 and index[1] <= self.gridSize
-
-	# TODO: CONNECTION CODE 
-
-	def freePosition(self):
-		return None if len(self.freePositions) == 0 else random.choice(self.freePositions)
-		
-	def addConnection(self, component1, component2):
-		print(component1.position)
-		print(component2.position)
-		print(abs(component1.position[0] - component2.position[0]))
-		if component1.position[0] == component2.position[0]:
-			if abs(component1.position[1] - component2.position[1]) != 1:
-				return False
-			else:
-				if component1.position[1] > component2.position[1]:
-					component1.connections[Direction.Top] = component2
-					component2.connections[Direction.Bottom] = component1
-				else:
-					component1.connections[Direction.Bottom] = component2
-					component2.connections[Direction.Top] = component1
-				self.modelChanged.emit()
-				return True
-		elif component1.position[1] == component2.position[1]:
-			if abs(component1.position[0] - component2.position[0]) != 1:
-				return False
-			else:
-				if component1.position[0] > component2.position[0]:
-					component1.connections[Direction.Left] = component2
-					component2.connections[Direction.Right] = component1
-				else:
-					component1.connections[Direction.Right] = component2
-					component2.connections[Direction.Left] = component1
-				self.modelChanged.emit()
-				return True
-		return False
-			
-			
