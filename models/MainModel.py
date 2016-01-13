@@ -83,8 +83,3 @@ class MainModel(QObject):
 
 	def validIndex(self, index):
 		return index is not None and len(index) == 2 and index[0] >= 0 and index[0] < self.gridSize and index[1] >= 0 and index[1] <= self.gridSize
-
-	# TODO: CONNECTION CODE 
-
-	def freePosition(self):
-		return None if len(self.freePositions) == 0 else random.choice(self.freePositions)
