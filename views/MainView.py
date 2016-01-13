@@ -151,8 +151,8 @@ class MainView(QMainWindow):
 			else:
 				print("invalid wire start")
 		elif self.cursorState is CursorState.Delete:
-			if self.model.breadboard[event.index[0]][event.index[1]] is not None:
-				self.model.removeComponent(self.model.breadboard[event.index[0]][event.index[1]])
+			if self.model.breadboard[index[0]][index[1]] is not None:
+				self.model.removeComponent(self.model.breadboard[index[0]][index[1]])
 		self.updateCursor()
 
 	def circuitDiagramMouseMove(self, index, coordinate):
