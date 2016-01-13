@@ -7,14 +7,16 @@ from PyQt5.QtCore import Qt, pyqtSignal
 from models.components import ComponentType
 
 class CircuitDiagramView(QGraphicsView):
-	mousePress = pyqtSignal(QMouseEvent, name='mousePress')
-	mouseMove = pyqtSignal(QMouseEvent, name='mouseMove')
-	mouseRelease = pyqtSignal(QMouseEvent, name='mouseRelease')
+	mousePress = pyqtSignal(tuple, tuple, name='mousePress')
+	mouseMove = pyqtSignal(tuple, tuple, name='mouseMove')
+	mouseRelease = pyqtSignal(tuple, tuple, name='mouseRelease')
 
 	def __init__(self, parent=None):
 		QGraphicsView.__init__(self, parent)
 
 		self.model = None
+
+		self.setAcceptDrops(True)
 
 		# setup & render circuit diagram grid
 		self.scene = QGraphicsScene()
@@ -40,10 +42,9 @@ class CircuitDiagramView(QGraphicsView):
 		self.dragging = dragging
 		self.render()
 
-	def componentToImage(self, component):
+	def componentTypeToImage(self, componentType):
 		dictionary = {ComponentType.Battery: "assets/battery.png"}
-		imageName = dictionary[component.type]
-
+		imageName = dictionary[componentType]
 		return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
 
 	def mouseCoordinatesToBlockIndex(self, x, y):
@@ -53,19 +54,31 @@ class CircuitDiagramView(QGraphicsView):
 			return (int((x - self.startingX) / self.blockSideLength), int((y - self.startingY) / self.blockSideLength))
 
 	def mousePressEvent(self, event):
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mousePress.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mousePress.emit(index, (event.x(), event.y()))
 
+	def dragEnterEvent(self, event):
+		event.acceptProposedAction()
+
+	def dragMoveEvent(self, event):
+		index = self.mouseCoordinatesToBlockIndex(event.pos().x(), event.pos().y())
+		self.mouseMove.emit(index, (event.pos().x(), event.pos().y()))
+
+	def dropEvent(self, event):
+		event.acceptProposedAction()
+		index = self.mouseCoordinatesToBlockIndex(event.pos().x(), event.pos().y())
+		self.mouseRelease.emit(index, (event.pos().x(), event.pos().y()))
+		
 	def mouseMoveEvent(self, event):
 		self.mousePosition = (event.x(), event.y())
 		if self.dragging:
 			self.render()
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mouseMove.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mouseMove.emit(index, (event.pos().x(), event.pos().y()))
 
 	def mouseReleaseEvent(self, event):
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mouseRelease.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mouseRelease.emit(index, (event.pos().x(), event.pos().y()))
 
 	def resizeEvent(self, event):
 		self.render()
@@ -79,7 +92,7 @@ class CircuitDiagramView(QGraphicsView):
 	def renderComponents(self):
 		if self.model is not None:
 			for component in self.model.components:
-				pixmap = self.componentToImage(component)
+				pixmap = self.componentTypeToImage(component.type)
 				pixmapItem = self.scene.addPixmap(pixmap)
 				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
 		
