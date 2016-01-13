@@ -8,15 +8,10 @@ from models.components import *
 
 class DraggableComponentButton(QToolButton):
 	mousePress = pyqtSignal(ComponentType, QMouseEvent, name='mousePress')
-	mouseMove = pyqtSignal(ComponentType, QMouseEvent, name='mouseMove')
-	mouseRelease = pyqtSignal(ComponentType, QMouseEvent, name='mouseRelease')
-
 	def __init__(self, parent=None):
 		QToolButton.__init__(self, parent)
 		self.componentType = None
 
-	#def mouseMoveEvent(self, event):
-		#self.mouseMove.emit(self.componentType, event)
-
-	#def mouseReleaseEvent(self, event):
-		#self.mouseRelease.emit(self.componentType, event)
+	def mousePressEvent(self, event):
+		self.checked = False
+		self.mousePress.emit(self.componentType, event)

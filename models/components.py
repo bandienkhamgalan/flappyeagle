@@ -74,7 +74,7 @@ class Bulb(Component):
 		return self.voltage > 0 and self.current > 0
 
 class Switch(Component):
-	def __init__(self, componentType=None):
+	def __init__(self):
 		Component.__init__(self, ComponentType.Switch)
 		self.closed = False
 
@@ -83,7 +83,8 @@ class Switch(Component):
 
 class Button(Switch):
 	def __init__(self):
-		Switch.__init__(self, ComponentType.Button)
+		Switch.__init__(self)
+		self.type = ComponentType.Button
 
 class Resistor(Component):
 	def __init__(self, resistance=1):

@@ -8,14 +8,16 @@ from models.components import ComponentType
 from models.components import Direction
 
 class CircuitDiagramView(QGraphicsView):
-	mousePress = pyqtSignal(QMouseEvent, name='mousePress')
-	mouseMove = pyqtSignal(QMouseEvent, name='mouseMove')
-	mouseRelease = pyqtSignal(QMouseEvent, name='mouseRelease')
+	mousePress = pyqtSignal(tuple, tuple, name='mousePress')
+	mouseMove = pyqtSignal(tuple, tuple, name='mouseMove')
+	mouseRelease = pyqtSignal(tuple, tuple, name='mouseRelease')
 
 	def __init__(self, parent=None):
 		QGraphicsView.__init__(self, parent)
 
 		self.model = None
+
+		self.setAcceptDrops(True)
 
 		# setup & render circuit diagram grid
 		self.scene = QGraphicsScene()
@@ -41,14 +43,20 @@ class CircuitDiagramView(QGraphicsView):
 		self.dragging = dragging
 		self.render()
 
-	def componentToImage(self, component):
+	def componentTypeToImageName(self, componentType):
 		dictionary = {
 			ComponentType.Battery: "assets/battery.png",
 			ComponentType.Resistor: "assets/resistor.png",
 			ComponentType.Voltmeter: "assets/voltmeter.png",
-			ComponentType.Ammeter: "assets/ammeter.png"
+			ComponentType.Ammeter: "assets/ammeter.png",
+			ComponentType.Switch: "assets/switch-off.png",
+			ComponentType.Bulb: "assets/bulb-off.png",
+			ComponentType.Button: "assets/button-off.png",
 		}
-		
+
+		return dictionary[componentType]
+
+	def componentToImage(self, component):
 		imageName = "assets/icon.png"
 		
 		if component.type == ComponentType.Wire:
@@ -80,7 +88,7 @@ class CircuitDiagramView(QGraphicsView):
 			if component.isOn():
 				imageName = "assets/bulb-on.png"
 			else:
-				imageName = "assets/blub-off.png"
+				imageName = "assets/bulb-off.png"
 		elif component.type == ComponentType.Switch:
 			if component.closed:
 				imageName = "assets/switch-on.png"
@@ -92,10 +100,8 @@ class CircuitDiagramView(QGraphicsView):
 			else:
 				imageName = "assets/button-off.png"
 		else:
-			imageName = dictionary[component.type]
-			
-		print(component)
-
+			imageName = self.componentTypeToImageName(component.type)
+		
 		return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
 
 	def mouseCoordinatesToBlockIndex(self, x, y):
@@ -105,19 +111,31 @@ class CircuitDiagramView(QGraphicsView):
 			return (int((x - self.startingX) / self.blockSideLength), int((y - self.startingY) / self.blockSideLength))
 
 	def mousePressEvent(self, event):
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mousePress.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mousePress.emit(index, (event.x(), event.y()))
 
+	def dragEnterEvent(self, event):
+		event.acceptProposedAction()
+
+	def dragMoveEvent(self, event):
+		index = self.mouseCoordinatesToBlockIndex(event.pos().x(), event.pos().y())
+		self.mouseMove.emit(index, (event.pos().x(), event.pos().y()))
+
+	def dropEvent(self, event):
+		event.acceptProposedAction()
+		index = self.mouseCoordinatesToBlockIndex(event.pos().x(), event.pos().y())
+		self.mouseRelease.emit(index, (event.pos().x(), event.pos().y()))
+		
 	def mouseMoveEvent(self, event):
 		self.mousePosition = (event.x(), event.y())
 		if self.dragging:
 			self.render()
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mouseMove.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mouseMove.emit(index, (event.pos().x(), event.pos().y()))
 
 	def mouseReleaseEvent(self, event):
-		event.index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
-		self.mouseRelease.emit(event)
+		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
+		self.mouseRelease.emit(index, (event.pos().x(), event.pos().y()))
 
 	def resizeEvent(self, event):
 		self.render()
