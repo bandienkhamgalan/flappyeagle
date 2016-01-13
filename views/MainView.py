@@ -173,7 +173,8 @@ class MainView(QMainWindow):
 								self.wirePath.pop()
 								self.wirePath.pop(0)
 								for block in self.wirePath:
-									self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+									if self.model.breadboard[block[0]][block[1]].type is ComponentType.Wire:
+										self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
 								self.wirePath = []
 								self.currentBlock = (None,None)
 								self.cursorState = CursorState.Wire
@@ -181,7 +182,8 @@ class MainView(QMainWindow):
 							self.wirePath.pop()
 							self.wirePath.pop(0)
 							for block in self.wirePath:
-								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+								if self.model.breadboard[block[0]][block[1]].type is ComponentType.Wire:
+									self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
 							self.wirePath = []
 							self.currentBlock = (None,None)
 							self.cursorState = CursorState.Wire
@@ -190,7 +192,8 @@ class MainView(QMainWindow):
 							self.wirePath.pop()
 							self.wirePath.pop(0)
 							for block in self.wirePath:
-								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+								if self.model.breadboard[block[0]][block[1]].type is ComponentType.Wire:
+									self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
 							self.wirePath = []
 							self.currentBlock = (None,None)
 							self.cursorState = CursorState.Wire
