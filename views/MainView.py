@@ -28,7 +28,6 @@ class MainView(QMainWindow):
 		self.ui = Ui_mainWindow()
 		self.ui.setupUi(self)
 
-
 		#### SETUP CircuitDiagramView MODEL
 		self.ui.circuitDiagram.setModel(self.model)
 		# circuit diagram drag and drop
@@ -43,20 +42,43 @@ class MainView(QMainWindow):
 		self.ui.wireMode.setCheckable(True)
 		self.ui.wireMode.clicked.connect(self.toggleWireMode)
 		# toolbar drag and drop
-		self.newComponentDrag  = None
+		self.newComponentDrag = None
 		self.newComponentType = None
-
+		
+		self.toolbarComponents = []
 		self.ui.newBattery.componentType = ComponentType.Battery
-		self.ui.newBattery.setIcon(QIcon(QPixmap("assets/battery.png")))
-		self.ui.newBattery.setIconSize(QSize(50, 50))
-		self.ui.newBattery.mousePress.connect(self.newComponentButtonMousePress)
+		self.toolbarComponents.append(self.ui.newBattery)
+
+		self.ui.newBulb.componentType = ComponentType.Bulb
+		self.toolbarComponents.append(self.ui.newBulb)
+
+		self.ui.newResistor.componentType = ComponentType.Resistor
+		self.toolbarComponents.append(self.ui.newResistor)
+
+		self.ui.newSwitch.componentType = ComponentType.Switch
+		self.toolbarComponents.append(self.ui.newSwitch)
+
+		self.ui.newButton.componentType = ComponentType.Button
+		self.toolbarComponents.append(self.ui.newButton)
+
+		self.ui.newAmmeter.componentType = ComponentType.Ammeter
+		self.toolbarComponents.append(self.ui.newAmmeter)
+
+		self.ui.newVoltmeter.componentType = ComponentType.Voltmeter
+		self.toolbarComponents.append(self.ui.newVoltmeter)
+
+		for toolbarButton in self.toolbarComponents:
+			toolbarButton.setIcon(QIcon(QPixmap(self.ui.circuitDiagram.componentTypeToImageName(toolbarButton.componentType))))
+			toolbarButton.setIconSize(QSize(50, 50))
+			toolbarButton.mousePress.connect(self.newComponentButtonMousePress)
 
 		self.statusBar().showMessage('Ready')
 
 		self.ui.actionNew.setShortcut('Ctrl+N')
 		self.ui.actionNew.setStatusTip('New document')
-
-		self.insertBattery()
+		
+		self.wirePath = []
+		self.currentBlock = (None,None)
 
 	def newComponentButtonMousePress(self, componentType, event):
 		self.cursorState = CursorState.NewComponentDragging
@@ -64,7 +86,7 @@ class MainView(QMainWindow):
 		self.newComponentDrag = QDrag(self)
 		self.newComponentDrag.setHotSpot(QPoint(self.ui.circuitDiagram.blockSideLength / 2, self.ui.circuitDiagram.blockSideLength / 2))
 		self.newComponentDrag.setMimeData(QMimeData())
-		self.newComponentDrag.setPixmap(self.ui.circuitDiagram.componentTypeToImage(componentType))
+		self.newComponentDrag.setPixmap(QPixmap(self.ui.circuitDiagram.componentTypeToImageName(componentType)).scaled(self.ui.circuitDiagram.blockSideLength, self.ui.circuitDiagram.blockSideLength))
 		QApplication.setOverrideCursor(QCursor(Qt.ForbiddenCursor))
 		self.newComponentDrag.exec_(Qt.MoveAction)
 
@@ -95,6 +117,8 @@ class MainView(QMainWindow):
 			if self.model.validIndex(index) and self.model.breadboard[index[0]][index[1]] is not None:
 				print("starting wire at ", index)
 				self.cursorState = CursorState.WireDragging
+				self.currentBlock = index
+				self.wirePath.append(index)
 			else:
 				print("invalid wire start")
 		self.updateCursor()
@@ -105,7 +129,48 @@ class MainView(QMainWindow):
 				print("invalid wire")
 				self.cursorState = CursorState.Wire
 			else:
-				print("move wire to ", index)
+				if index != self.currentBlock:
+					print("move wire to ", index)
+					self.wirePath.append(index)
+					print(self.wirePath)
+					self.currentBlock = index
+					if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]] is not None:
+						if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]].numberOfConnections() < 2:
+							print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
+							if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]].type in [ComponentType.Battery, ComponentType.Switch, ComponentType.Button, ComponentType.Resistor] and (self.currentBlock[0] == self.wirePath[-2][0]):
+								self.wirePath.pop()
+								self.wirePath.pop(0)
+								for block in self.wirePath:
+									self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+								self.wirePath = []
+								self.currentBlock = (None,None)
+								self.cursorState = CursorState.Wire
+						else:
+							self.wirePath.pop()
+							self.wirePath.pop(0)
+							for block in self.wirePath:
+								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+							self.wirePath = []
+							self.currentBlock = (None,None)
+							self.cursorState = CursorState.Wire
+					else:
+						if (len(self.wirePath) == 2) and (self.model.breadboard[self.wirePath[0][0]][self.wirePath[0][1]].type in [ComponentType.Battery, ComponentType.Switch, ComponentType.Button, ComponentType.Resistor]) and (self.wirePath[0][0] == self.wirePath[1][0]):
+							self.wirePath.pop()
+							self.wirePath.pop(0)
+							for block in self.wirePath:
+								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+							self.wirePath = []
+							self.currentBlock = (None,None)
+							self.cursorState = CursorState.Wire
+						else:
+							wireComponent = Wire()
+							wireComponent.position = self.wirePath[-1]
+							if self.model.addComponent(wireComponent):
+								print("added wire")
+							else:
+								print("could not add wire")
+							#print(self.wirePath)
+							print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
 		elif self.cursorState is CursorState.ExistingComponentDragging:
 			if self.model.validIndex(index):
 				pass # print("moving %s to %s" % (self.selectedComponent, index))
@@ -123,9 +188,11 @@ class MainView(QMainWindow):
 			else:
 				self.ui.circuitDiagram.setSelection(None)
 
-		elif self.cursorState is CursorState.WireDragging:
+		if self.cursorState is CursorState.WireDragging:
 			if self.model.validIndex(index):
 				print("valid end wire at ", index)
+				self.wirePath = []
+				self.currentBlock = (None,None)
 			else:
 				print("invalid wire")
 			self.cursorState = CursorState.Wire
@@ -146,6 +213,20 @@ class MainView(QMainWindow):
 				newComponent = None
 				if self.newComponentType is ComponentType.Battery:
 					newComponent = Battery()
+				elif self.newComponentType is ComponentType.Bulb:
+					newComponent = Bulb()
+				elif self.newComponentType is ComponentType.Resistor:
+					newComponent = Resistor()
+				elif self.newComponentType is ComponentType.Switch:
+					newComponent = Switch()
+				elif self.newComponentType is ComponentType.Button:
+					newComponent = Button()
+				elif self.newComponentType is ComponentType.Ammeter:
+					newComponent = Ammeter()
+				elif self.newComponentType is ComponentType.Voltmeter:
+					newComponent = Voltmeter()
+
+				print(self.newComponentType, ": ", self.ui.circuitDiagram.componentTypeToImageName(self.newComponentType))
 
 				if newComponent is not None:
 					newComponent.position = index

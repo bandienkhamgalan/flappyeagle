@@ -96,25 +96,19 @@
         <item>
          <widget class="QGroupBox" name="toolboxComponents">
           <property name="sizePolicy">
-           <sizepolicy hsizetype="Fixed" vsizetype="MinimumExpanding">
+           <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize">
-           <size>
-            <width>250</width>
-            <height>0</height>
-           </size>
-          </property>
           <property name="maximumSize">
            <size>
             <width>250</width>
-            <height>400</height>
+            <height>16777215</height>
            </size>
           </property>
           <property name="title">
-           <string>Components</string>
+           <string>Toolbox</string>
           </property>
           <widget class="QWidget" name="gridLayoutWidget">
            <property name="geometry">
@@ -122,11 +116,30 @@
              <x>0</x>
              <y>20</y>
              <width>251</width>
-             <height>231</height>
+             <height>411</height>
             </rect>
            </property>
-           <layout class="QGridLayout" name="toolboxComponentsGrid" rowstretch="0,0,0,0,0">
-            <item row="2" column="2">
+           <layout class="QGridLayout" name="toolboxComponentsGrid" rowstretch="0,0,0,0,0,0">
+            <item row="4" column="1">
+             <widget class="DraggableComponentButton" name="newButton">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Button</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="4" column="0">
              <widget class="DraggableComponentButton" name="newSwitch">
               <property name="minimumSize">
                <size>
@@ -139,44 +152,6 @@
               </property>
               <property name="text">
                <string>Switch</string>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonTextUnderIcon</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="1">
-             <widget class="DraggableComponentButton" name="newVoltmeter">
-              <property name="minimumSize">
-               <size>
-                <width>75</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="autoFillBackground">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Voltmeter</string>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonTextUnderIcon</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="4" column="0">
-             <widget class="DraggableComponentButton" name="newAmmeter">
-              <property name="minimumSize">
-               <size>
-                <width>75</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="autoFillBackground">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Ammeter</string>
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonTextUnderIcon</enum>
@@ -202,44 +177,6 @@
               </property>
              </widget>
             </item>
-            <item row="4" column="2">
-             <widget class="DraggableComponentButton" name="newResistor">
-              <property name="minimumSize">
-               <size>
-                <width>75</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="autoFillBackground">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>Resistor</string>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonTextUnderIcon</enum>
-              </property>
-             </widget>
-            </item>
-            <item row="2" column="1">
-             <widget class="DraggableComponentButton" name="newLED">
-              <property name="minimumSize">
-               <size>
-                <width>75</width>
-                <height>60</height>
-               </size>
-              </property>
-              <property name="autoFillBackground">
-               <bool>false</bool>
-              </property>
-              <property name="text">
-               <string>LED</string>
-              </property>
-              <property name="toolButtonStyle">
-               <enum>Qt::ToolButtonTextUnderIcon</enum>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QToolButton" name="wireMode">
               <property name="minimumSize">
@@ -259,22 +196,123 @@
               </property>
              </widget>
             </item>
+            <item row="0" column="2">
+             <widget class="QToolButton" name="deleteMode">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Delete</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QToolButton" name="selectMode">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Select</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="0">
+             <widget class="DraggableComponentButton" name="newVoltmeter">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Voltmeter</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="5" column="1">
+             <widget class="DraggableComponentButton" name="newAmmeter">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Ammeter</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="1">
+             <widget class="DraggableComponentButton" name="newResistor">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Resistor</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="DraggableComponentButton" name="newBulb">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>60</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Bulb</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
            </layout>
           </widget>
          </widget>
-        </item>
-        <item>
-         <spacer name="verticalSpacer">
-          <property name="orientation">
-           <enum>Qt::Vertical</enum>
-          </property>
-          <property name="sizeHint" stdset="0">
-           <size>
-            <width>20</width>
-            <height>40</height>
-           </size>
-          </property>
-         </spacer>
         </item>
        </layout>
       </item>

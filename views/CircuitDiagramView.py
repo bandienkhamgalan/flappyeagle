@@ -5,6 +5,7 @@ from PyQt5.QtGui import QStandardItem, QStandardItemModel, QPen, QColor, QBrush,
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QGraphicsScene, QGraphicsView
 from PyQt5.QtCore import Qt, pyqtSignal
 from models.components import ComponentType
+from models.components import Direction
 
 class CircuitDiagramView(QGraphicsView):
 	mousePress = pyqtSignal(tuple, tuple, name='mousePress')
@@ -42,9 +43,65 @@ class CircuitDiagramView(QGraphicsView):
 		self.dragging = dragging
 		self.render()
 
-	def componentTypeToImage(self, componentType):
-		dictionary = {ComponentType.Battery: "assets/battery.png"}
-		imageName = dictionary[componentType]
+	def componentTypeToImageName(self, componentType):
+		dictionary = {
+			ComponentType.Battery: "assets/battery.png",
+			ComponentType.Resistor: "assets/resistor.png",
+			ComponentType.Voltmeter: "assets/voltmeter.png",
+			ComponentType.Ammeter: "assets/ammeter.png",
+			ComponentType.Switch: "assets/switch-off.png",
+			ComponentType.Bulb: "assets/bulb-off.png",
+			ComponentType.Button: "assets/button-off.png",
+		}
+
+		return dictionary[componentType]
+
+	def componentToImage(self, component):
+		imageName = "assets/icon.png"
+		
+		if component.type == ComponentType.Wire:
+			if component.connections[Direction.Top] is not None:
+				print("Top Connection")
+				if component.connections[Direction.Right] is not None:
+					imageName = "assets/wire-topright.png"
+				elif component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-topbottom.png"
+				elif component.connections[Direction.Left] is not None:
+					imageName = "assets/wire-topleft.png"
+				else:
+					imageName = "assets/wire-top.png"
+			elif component.connections[Direction.Right] is not None:
+				if component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-bottomright.png"
+				elif component.connections[Direction.Left] is not None:
+					imageName = "assets/wire-leftright.png"
+				else:
+					imageName = "assets/wire-right.png"
+			elif component.connections[Direction.Left] is not None:
+				if component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-bottomleft.png"
+				else:
+					imageName = "assets/wire-left.png"
+			else:
+				imageName = "assets/wire-bottom.png"
+		elif component.type == ComponentType.Bulb:
+			if component.isOn():
+				imageName = "assets/bulb-on.png"
+			else:
+				imageName = "assets/bulb-off.png"
+		elif component.type == ComponentType.Switch:
+			if component.closed:
+				imageName = "assets/switch-on.png"
+			else:
+				imageName = "assets/switch-off.png"
+		elif component.type == ComponentType.Button:
+			if component.closed:
+				imageName = "assets/button-on.png"
+			else:
+				imageName = "assets/button-off.png"
+		else:
+			imageName = self.componentTypeToImageName(component.type)
+		
 		return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
 
 	def mouseCoordinatesToBlockIndex(self, x, y):
@@ -92,7 +149,7 @@ class CircuitDiagramView(QGraphicsView):
 	def renderComponents(self):
 		if self.model is not None:
 			for component in self.model.components:
-				pixmap = self.componentTypeToImage(component.type)
+				pixmap = self.componentToImage(component)
 				pixmapItem = self.scene.addPixmap(pixmap)
 				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
 		
