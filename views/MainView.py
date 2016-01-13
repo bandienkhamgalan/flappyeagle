@@ -54,6 +54,9 @@ class MainView(QMainWindow):
 
 		self.ui.actionNew.setShortcut('Ctrl+N')
 		self.ui.actionNew.setStatusTip('New document')
+		
+		self.wirePath = []
+		self.currentBlock = (None,None)
 
 	def newComponentButtonMouseMove(componentType, event):
 		# if event.buttons() != Qt.LeftButton:
@@ -90,17 +93,60 @@ class MainView(QMainWindow):
 			if self.model.validIndex(event.index) and self.model.breadboard[event.index[0]][event.index[1]] is not None:
 				print("starting wire at ", event.index)
 				self.cursorState = CursorState.WireDragging
+				self.currentBlock = event.index
+				self.wirePath.append(event.index)
 			else:
 				print("invalid wire start")
 		self.updateCursor()
-
+	
 	def circuitDiagramMouseMove(self, event):
 		if self.cursorState is CursorState.WireDragging:
 			if not self.model.validIndex(event.index):
 				print("invalid wire")
 				self.cursorState = CursorState.Wire
 			else:
-				print("move wire to ", event.index)
+				if event.index != self.currentBlock:
+					print("move wire to ", event.index)
+					self.wirePath.append(event.index)
+					print(self.wirePath)
+					self.currentBlock = event.index
+					if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]] is not None:
+						if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]].numberOfConnections() < 2:
+							print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
+							if self.model.breadboard[self.currentBlock[0]][self.currentBlock[1]].type in [ComponentType.Battery, ComponentType.Switch, ComponentType.Button, ComponentType.Resistor] and (self.currentBlock[0] == self.wirePath[-2][0]):
+								self.wirePath.pop()
+								self.wirePath.pop(0)
+								for block in self.wirePath:
+									self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+								self.wirePath = []
+								self.currentBlock = (None,None)
+								self.cursorState = CursorState.Wire
+						else:
+							self.wirePath.pop()
+							self.wirePath.pop(0)
+							for block in self.wirePath:
+								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+							self.wirePath = []
+							self.currentBlock = (None,None)
+							self.cursorState = CursorState.Wire
+					else:
+						if (len(self.wirePath) == 2) and (self.model.breadboard[self.wirePath[0][0]][self.wirePath[0][1]].type in [ComponentType.Battery, ComponentType.Switch, ComponentType.Button, ComponentType.Resistor]) and (self.wirePath[0][0] == self.wirePath[1][0]):
+							self.wirePath.pop()
+							self.wirePath.pop(0)
+							for block in self.wirePath:
+								self.model.removeComponent(self.model.breadboard[block[0]][block[1]])
+							self.wirePath = []
+							self.currentBlock = (None,None)
+							self.cursorState = CursorState.Wire
+						else:
+							wireComponent = Wire()
+							wireComponent.position = self.wirePath[-1]
+							if self.model.addComponent(wireComponent):
+								print("added wire")
+							else:
+								print("could not add wire")
+							#print(self.wirePath)
+							print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
 		elif self.cursorState is CursorState.ExistingComponentDragging:
 			if self.model.validIndex(event.index):
 				pass # print("moving %s to %s" % (self.selectedComponent, event.index))
@@ -121,6 +167,8 @@ class MainView(QMainWindow):
 		if self.cursorState is CursorState.WireDragging:
 			if self.model.validIndex(event.index):
 				print("valid end wire at ", event.index)
+				self.wirePath = []
+				self.currentBlock = (None,None)
 			else:
 				print("invalid wire")
 			self.cursorState = CursorState.Wire

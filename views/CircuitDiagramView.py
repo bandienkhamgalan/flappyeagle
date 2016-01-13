@@ -5,6 +5,7 @@ from PyQt5.QtGui import QStandardItem, QStandardItemModel, QPen, QColor, QBrush,
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QGraphicsScene, QGraphicsView
 from PyQt5.QtCore import Qt, pyqtSignal
 from models.components import ComponentType
+from models.components import Direction
 
 class CircuitDiagramView(QGraphicsView):
 	mousePress = pyqtSignal(QMouseEvent, name='mousePress')
@@ -41,8 +42,59 @@ class CircuitDiagramView(QGraphicsView):
 		self.render()
 
 	def componentToImage(self, component):
-		dictionary = {ComponentType.Battery: "assets/battery.png"}
-		imageName = dictionary[component.type]
+		dictionary = {
+			ComponentType.Battery: "assets/battery.png",
+			ComponentType.Resistor: "assets/resistor.png",
+			ComponentType.Voltmeter: "assets/voltmeter.png",
+			ComponentType.Ammeter: "assets/ammeter.png"
+		}
+		
+		imageName = "assets/icon.png"
+		
+		if component.type == ComponentType.Wire:
+			if component.connections[Direction.Top] is not None:
+				print("Top Connection")
+				if component.connections[Direction.Right] is not None:
+					imageName = "assets/wire-topright.png"
+				elif component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-topbottom.png"
+				elif component.connections[Direction.Left] is not None:
+					imageName = "assets/wire-topleft.png"
+				else:
+					imageName = "assets/wire-top.png"
+			elif component.connections[Direction.Right] is not None:
+				if component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-bottomright.png"
+				elif component.connections[Direction.Left] is not None:
+					imageName = "assets/wire-leftright.png"
+				else:
+					imageName = "assets/wire-right.png"
+			elif component.connections[Direction.Left] is not None:
+				if component.connections[Direction.Bottom] is not None:
+					imageName = "assets/wire-bottomleft.png"
+				else:
+					imageName = "assets/wire-left.png"
+			else:
+				imageName = "assets/wire-bottom.png"
+		elif component.type == ComponentType.Bulb:
+			if component.isOn():
+				imageName = "assets/bulb-on.png"
+			else:
+				imageName = "assets/blub-off.png"
+		elif component.type == ComponentType.Switch:
+			if component.closed:
+				imageName = "assets/switch-on.png"
+			else:
+				imageName = "assets/switch-off.png"
+		elif component.type == ComponentType.Button:
+			if component.closed:
+				imageName = "assets/button-on.png"
+			else:
+				imageName = "assets/button-off.png"
+		else:
+			imageName = dictionary[component.type]
+			
+		print(component)
 
 		return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
 

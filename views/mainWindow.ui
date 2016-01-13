@@ -108,7 +108,7 @@
            </size>
           </property>
           <property name="title">
-           <string>Components</string>
+           <string>Toolbox</string>
           </property>
           <widget class="QWidget" name="gridLayoutWidget">
            <property name="geometry">
@@ -116,7 +116,7 @@
              <x>0</x>
              <y>20</y>
              <width>251</width>
-             <height>231</height>
+             <height>241</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="toolboxComponentsGrid" rowstretch="0,0,0,0,0">
@@ -247,6 +247,44 @@
               </property>
               <property name="text">
                <string>Wire</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="2">
+             <widget class="QToolButton" name="deleteMode">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Delete</string>
+              </property>
+              <property name="toolButtonStyle">
+               <enum>Qt::ToolButtonTextUnderIcon</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QToolButton" name="selectMode">
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Select</string>
               </property>
               <property name="toolButtonStyle">
                <enum>Qt::ToolButtonTextUnderIcon</enum>

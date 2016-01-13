@@ -58,3 +58,35 @@ class MainModel(QObject):
 
 	def freePosition(self):
 		return None if len(self.freePositions) == 0 else random.choice(self.freePositions)
+		
+	def addConnection(self, component1, component2):
+		print(component1.position)
+		print(component2.position)
+		print(abs(component1.position[0] - component2.position[0]))
+		if component1.position[0] == component2.position[0]:
+			if abs(component1.position[1] - component2.position[1]) != 1:
+				return False
+			else:
+				if component1.position[1] > component2.position[1]:
+					component1.connections[Direction.Top] = component2
+					component2.connections[Direction.Bottom] = component1
+				else:
+					component1.connections[Direction.Bottom] = component2
+					component2.connections[Direction.Top] = component1
+				self.modelChanged.emit()
+				return True
+		elif component1.position[1] == component2.position[1]:
+			if abs(component1.position[0] - component2.position[0]) != 1:
+				return False
+			else:
+				if component1.position[0] > component2.position[0]:
+					component1.connections[Direction.Left] = component2
+					component2.connections[Direction.Right] = component1
+				else:
+					component1.connections[Direction.Right] = component2
+					component2.connections[Direction.Left] = component1
+				self.modelChanged.emit()
+				return True
+		return False
+			
+			
