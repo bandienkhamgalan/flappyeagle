@@ -198,14 +198,20 @@ class MainView(QMainWindow):
 							self.currentBlock = (None,None)
 							self.cursorState = CursorState.Wire
 						else:
-							wireComponent = Wire()
-							wireComponent.position = self.wirePath[-1]
-							if self.model.addComponent(wireComponent):
-								print("added wire")
+							if self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]].numberOfConnections() > 1:
+								
+								self.wirePath = []
+								self.currentBlock = (None,None)
+								self.cursorState = CursorState.Wire
 							else:
-								print("could not add wire")
-							#print(self.wirePath)
-							print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
+								wireComponent = Wire()
+								wireComponent.position = self.wirePath[-1]
+								if self.model.addComponent(wireComponent):
+									print("added wire")
+								else:
+									print("could not add wire")
+								#print(self.wirePath)
+								print(self.model.addConnection(self.model.breadboard[self.wirePath[-2][0]][self.wirePath[-2][1]],self.model.breadboard[self.wirePath[-1][0]][self.wirePath[-1][1]]))
 		elif self.cursorState is CursorState.ExistingComponentDragging:
 			if self.model.validIndex(index):
 				pass # print("moving %s to %s" % (self.selectedComponent, index))
