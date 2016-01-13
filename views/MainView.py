@@ -131,7 +131,7 @@ class MainView(QMainWindow):
 	def toggleSelectMode(self):
 		self.ui.wireMode.setChecked(False)
 		self.ui.deleteMode.setChecked(False)
-		self.cursorState = CursorState.Select if self.ui.selectMode.isChecked() else CusrsorState.Select
+		self.cursorState = CursorState.Select if self.ui.selectMode.isChecked() else CursorState.Select
 		self.updateCursor()
 
 	def circuitDiagramMousePress(self, index, coordinate):
