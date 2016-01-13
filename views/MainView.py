@@ -43,9 +43,9 @@ class MainView(QMainWindow):
 		self.ui.wireMode.setCheckable(True)
 		self.ui.wireMode.clicked.connect(self.toggleWireMode)
 
-		#self.ui.newBattery.componentType = ComponentType.Battery
-		#self.ui.newBattery.setIcon(QIcon(QPixmap("assets/battery.png")))
-		#self.ui.newBattery.setIconSize(QSize(50, 50))
+		self.ui.newBattery.componentType = ComponentType.Battery
+		self.ui.newBattery.setIcon(QIcon(QPixmap("assets/battery.png")))
+		self.ui.newBattery.setIconSize(QSize(50, 50))
 		#self.ui.newBattery.mouseMove.connect(self.newComponentButtonMouseMove)
 		#self.ui.newBattery.mouseRelease.connect(self.newComponentButtonMouseRelease)
 		self.ui.newBattery.clicked.connect(self.insertBattery)
