@@ -17,6 +17,7 @@ class CursorState(Enum):
 	NewComponentDragging = 3
 	ExistingComponentDragging = 4
 	Delete = 5
+	Run = 6
 
 class MainView(QMainWindow):
 	def __init__(self, model, controller):
@@ -28,6 +29,8 @@ class MainView(QMainWindow):
 		# load QtDesigner UI 
 		self.ui = Ui_mainWindow()
 		self.ui.setupUi(self)
+
+		self.buttonHeld = (None, None)
 
 		#### SETUP CircuitDiagramView MODEL
 		self.ui.circuitDiagram.setModel(self.model)
@@ -49,6 +52,13 @@ class MainView(QMainWindow):
 		self.ui.selectMode.setCheckable(True)
 		self.ui.selectMode.clicked.connect(self.toggleSelectMode)
 		self.ui.selectMode.setChecked(True)
+
+		self.ui.run.setCheckable(True)
+		self.ui.run.clicked.connect(self.toggleRunMode)
+
+		self.ui.build.setCheckable(True)
+		self.ui.build.clicked.connect(self.toggleSelectMode)
+		self.ui.build.setChecked(True)
 
 		# toolbar drag and drop
 		self.newComponentDrag = None
@@ -90,6 +100,13 @@ class MainView(QMainWindow):
 		self.currentBlock = (None,None)
 
 	def newComponentButtonMousePress(self, componentType, event):
+		self.ui.build.setChecked(True)
+		self.ui.wireMode.setChecked(False)
+		self.ui.deleteMode.setChecked(False)
+		self.ui.selectMode.setChecked(True)
+		self.controller.bulbsOff()
+		self.model.reRender()
+
 		self.cursorState = CursorState.NewComponentDragging
 		self.newComponentType = componentType
 		self.newComponentDrag = QDrag(self)
@@ -100,6 +117,7 @@ class MainView(QMainWindow):
 		self.newComponentDrag.exec_(Qt.MoveAction)
 
 		self.cursorState = CursorState.Select
+		self.ui.selectMode.setChecked(True)
 		self.updateCursor()
 
 	def updateCursor(self):
@@ -113,26 +131,48 @@ class MainView(QMainWindow):
 			QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
 
 	def toggleWireMode(self):
+		self.ui.build.setChecked(True)
 		self.ui.deleteMode.setChecked(False)
 		self.ui.selectMode.setChecked(False)
+		self.controller.bulbsOff()
+		self.model.reRender()
 		self.cursorState = CursorState.Wire if self.ui.wireMode.isChecked() else CursorState.Select
 		if self.cursorState is CursorState.Select :
 			self.ui.selectMode.setChecked(True)
 		self.updateCursor()
 		
 	def toggleDeleteMode(self):
+		self.ui.build.setChecked(True)
 		self.ui.wireMode.setChecked(False)
 		self.ui.selectMode.setChecked(False)
+		self.controller.bulbsOff()
+		self.model.reRender()
 		self.cursorState = CursorState.Delete if self.ui.deleteMode.isChecked() else CursorState.Select
 		if self.cursorState is CursorState.Select :
 			self.ui.selectMode.setChecked(True)
 		self.updateCursor()
 		
 	def toggleSelectMode(self):
+		self.ui.build.setChecked(True)
+		self.ui.selectMode.setChecked(True)
 		self.ui.wireMode.setChecked(False)
 		self.ui.deleteMode.setChecked(False)
+		self.controller.bulbsOff()
+		self.model.reRender()
 		self.cursorState = CursorState.Select if self.ui.selectMode.isChecked() else CursorState.Select
 		self.updateCursor()
+
+	def toggleRunMode(self):
+		self.ui.wireMode.setChecked(False)
+		self.ui.deleteMode.setChecked(False)
+		self.ui.selectMode.setChecked(False)
+		self.controller.runBreadboard()
+		self.controller.printBreadboard()
+		self.model.reRender()
+		self.cursorState = CursorState.Run if self.ui.run.isChecked() else CursorState.Select
+		if self.cursorState is CursorState.Select :
+			self.ui.selectMode.setChecked(True)
+		self.updateCursor
 
 	def circuitDiagramMousePress(self, index, coordinate):
 		if self.cursorState is CursorState.Select:
@@ -153,7 +193,23 @@ class MainView(QMainWindow):
 		elif self.cursorState is CursorState.Delete:
 			if self.model.breadboard[index[0]][index[1]] is not None:
 				self.model.removeComponent(self.model.breadboard[index[0]][index[1]])
+		elif self.cursorState is CursorState.Run:
+			if self.model.breadboard[index[0]][index[1]] is not None:
+				if self.model.breadboard[index[0]][index[1]].type is ComponentType.Switch:
+					self.model.breadboard[index[0]][index[1]].flip()
+					self.model.modelChanged.emit()
+					self.controller.runBreadboard()
+					self.model.reRender()
+				elif self.model.breadboard[index[0]][index[1]].type is ComponentType.Button:
+					self.model.breadboard[index[0]][index[1]].flip()
+					self.buttonHeld = index
+					self.model.modelChanged.emit()
+					self.controller.runBreadboard()
+					self.model.reRender()
 		self.updateCursor()
+
+
+
 
 	def circuitDiagramMouseMove(self, index, coordinate):
 		if self.cursorState is CursorState.WireDragging:
@@ -273,6 +329,14 @@ class MainView(QMainWindow):
 					newComponent.position = index
 					self.model.addComponent(newComponent)
 			self.cursorState = CursorState.Select
+		elif self.cursorState is CursorState.Run:
+			if self.buttonHeld != (None, None):
+				self.model.breadboard[self.buttonHeld[0]][self.buttonHeld[1]].flip()
+				self.buttonHeld = (None, None)
+				self.model.modelChanged.emit()
+				self.controller.runBreadboard()
+				self.model.reRender()
+
 
 		self.updateCursor()
 

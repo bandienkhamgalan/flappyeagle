@@ -17,6 +17,9 @@ class MainModel(QObject):
 		self.freePositions = list(itertools.product(range(self.gridSize),range(self.gridSize)))
 
 	# supply zero or both indices, otherwise fails
+	def reRender(self):
+		self.modelChanged.emit()
+
 	def addComponent(self, component):
 		# check validity of index and vacancy of insertion position
 		if self.validIndex(component.position) and self.breadboard[component.position[0]][component.position[1]] is None:
