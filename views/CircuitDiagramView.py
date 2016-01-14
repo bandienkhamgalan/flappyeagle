@@ -61,7 +61,6 @@ class CircuitDiagramView(QGraphicsView):
 		
 		if component.type == ComponentType.Wire:
 			if component.connections[Direction.Top] is not None:
-				print("Top Connection")
 				if component.connections[Direction.Right] is not None:
 					imageName = "assets/wire-topright.png"
 				elif component.connections[Direction.Bottom] is not None:

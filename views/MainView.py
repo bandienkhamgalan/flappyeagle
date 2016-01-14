@@ -2,7 +2,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtGui import QCursor, QDrag, QIcon, QPixmap
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QGraphicsScene, QGraphicsView
+from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QGraphicsScene, QGraphicsView, QFileDialog
 from PyQt5.QtCore import Qt, QSize, QMimeData, QPoint
 from views.mainWindow import Ui_mainWindow
 from models import MainModel
@@ -86,8 +86,49 @@ class MainView(QMainWindow):
 		self.ui.actionNew.setShortcut('Ctrl+N')
 		self.ui.actionNew.setStatusTip('New document')
 		
+		saveMenu = self.menuBar().addMenu('Save')
+		openAction = saveMenu.addAction('Open File...')
+		openAction.triggered.connect(self.showFileDialog)
+		saveAction = saveMenu.addAction('Save File')
+		saveAction.triggered.connect(self.showSaveDialog)
+		saveAsAction = saveMenu.addAction('Save As...')
+		saveAsAction.triggered.connect(self.saveAs)
+		saveAction.setShortcut('Ctrl+S')
+		saveAsAction.setShortcut('Ctrl+Shift+S')
+		openAction.setShortcut('Ctrl+O')
+		
+		self.savePath = None
+		
 		self.wirePath = []
 		self.currentBlock = (None,None)
+		
+	def saveAs(self):
+		fname = QFileDialog.getSaveFileName(self, 'Save file', 'breadboard.eagle')
+		if fname[0]:
+			self.savePath = fname[0]
+			self.model.saveModel(fname[0])
+			self.statusBar().showMessage('Saved')
+		
+	def showFileDialog(self):
+		reply = QMessageBox.question(self, "Message", "Opening a new file overwrites the current file. Do you want to save the current file?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Yes)
+		if reply == QMessageBox.No:
+			fname = QFileDialog.getOpenFileName(self, 'Open file', '')
+			if fname[0]:
+				self.savePath = fname[0]
+				if not self.model.readModel(fname[0]):
+					QMessageBox.question(self, "Message", "Parsing failed. File may be corrupted.", QMessageBox.Cancel, QMessageBox.Cancel)
+				else:
+					self.statusBar().showMessage('File Opened. Ready')
+		elif reply == QMessageBox.Yes:
+			self.showSaveDialog()
+			self.statusBar().showMessage('Saved')
+	
+	def showSaveDialog(self):
+		if self.savePath is None:
+			saveAs()
+		else:
+			self.model.saveModel(self.savePath)
+			self.statusBar().showMessage('Saved')
 
 	def newComponentButtonMousePress(self, componentType, event):
 		self.cursorState = CursorState.NewComponentDragging
@@ -295,4 +336,5 @@ class MainView(QMainWindow):
 		if reply == QMessageBox.No:
 			event.accept()
 		else:
-			event.ignore()
+			self.showSaveDialog()
+			event.accept()
