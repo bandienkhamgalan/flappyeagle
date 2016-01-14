@@ -106,7 +106,7 @@ class MainView(QMainWindow):
 	
 	def showSaveDialog(self):
 		if self.savePath is None:
-			saveAs()
+			self.saveAs()
 		else:
 			self.model.saveModel(self.savePath)
 			self.statusBar().showMessage('Saved')
