@@ -16,7 +16,6 @@ class MainModel(QObject):
 		self.components = []
 		self.freePositions = list(itertools.product(range(self.gridSize),range(self.gridSize)))
 
-	# supply zero or both indices, otherwise fails
 	def addComponent(self, component):
 		# check validity of index and vacancy of insertion position
 		if self.validIndex(component.position) and self.breadboard[component.position[0]][component.position[1]] is None:
@@ -24,8 +23,6 @@ class MainModel(QObject):
 			self.counter += 1
 			self.breadboard[component.position[0]][component.position[1]] = component
 			self.components.append(component)
-			self.freePositions.remove(component.position)
-
 			self.modelChanged.emit()
 			return True
 		else:
@@ -35,15 +32,16 @@ class MainModel(QObject):
 		if component in self.components:
 			component.removeConnections()
 			self.breadboard[component.position[0]][component.position[1]] = None
-			self.freePositions.append(component.position)
 			self.components.remove(component)
-
 			self.modelChanged.emit()	
+			return True
+		else:
+			return False
+
+	def removeComponentAtIndex(self, index):
+		return self.removeComponent(self.componentAtIndex(index))
 
 	def addConnection(self, component1, component2):
-		print(component1.position)
-		print(component2.position)
-		print(abs(component1.position[0] - component2.position[0]))
 		if component1.position[0] == component2.position[0]:
 			if abs(component1.position[1] - component2.position[1]) != 1:
 				return False
@@ -80,6 +78,9 @@ class MainModel(QObject):
 			return True
 		else:
 			return False
+
+	def componentAtIndex(self, index):
+		return self.breadboard[index[0]][index[1]] if self.validIndex(index) else None
 
 	def validIndex(self, index):
 		return index is not None and len(index) == 2 and index[0] >= 0 and index[0] < self.gridSize and index[1] >= 0 and index[1] <= self.gridSize

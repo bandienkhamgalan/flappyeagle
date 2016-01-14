@@ -23,6 +23,10 @@ class ComponentType(IntEnum):
 	Wire = 7
 	Junction = 8
 
+	def __str__(self):
+		names = ["Bulb", "Battery", "Switch", "Button", "Resistor", "Ammeter", "Voltmeter", "Wire", "Junction"]
+		return names[self]
+
 class Component:
 	def __init__(self, componentType=None):
 		self.id = None

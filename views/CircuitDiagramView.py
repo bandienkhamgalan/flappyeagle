@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtGui import QStandardItem, QStandardItemModel, QPen, QColor, QBrush, QPixmap, QMouseEvent
+from PyQt5.QtGui import QStandardItem, QStandardItemModel, QPen, QColor, QBrush, QPixmap, QMouseEvent, QFont
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QMessageBox, QGraphicsScene, QGraphicsView
 from PyQt5.QtCore import Qt, pyqtSignal
 from models.components import ComponentType
@@ -15,7 +15,8 @@ class CircuitDiagramView(QGraphicsView):
 	def __init__(self, parent=None):
 		QGraphicsView.__init__(self, parent)
 
-		self.model = None
+		self._model = None
+		self.controller = None
 
 		self.setAcceptDrops(True)
 
@@ -23,24 +24,50 @@ class CircuitDiagramView(QGraphicsView):
 		self.scene = QGraphicsScene()
 		self.setScene(self.scene)
 
-		# drag and drop
-		self.selection = None
-		self.dragging = False
+		self._shouldShowSelection = False
+		self._selection = None
+		self._dragging = False
 		self.mousePosition = None
 		self.draggingStart = None
 
 		self.render()
 
-	def setModel(self, model):
-		self.model = model
+	@property
+	def shouldShowSelection(self):
+		return self._shouldShowSelection
+
+	@shouldShowSelection.setter
+	def shouldShowSelection(self, value):
+		if self.shouldShowSelection is not value and value is not None:
+			self._shouldShowSelection = value
+			self.render()		
+
+	@property
+	def model(self):
+		return self._model
+
+	@model.setter
+	def model(self, value):
+		self._model = value
 		self.model.modelChanged.connect(self.render)
 
-	def setSelection(self, selection):
-		self.selection = selection
-		self.render()
+	@property
+	def selection(self):
+		return self._selection
 
-	def setDragging(self, dragging):
-		self.dragging = dragging
+	@selection.setter
+	def selection(self, value):
+		if self.selection is not value:
+			self._selection = value
+			self.render()	
+
+	@property
+	def dragging(self):
+		return self._dragging
+
+	@dragging.setter
+	def dragging(self, value):
+		self._dragging = value
 		self.render()
 
 	def componentTypeToImageName(self, componentType):
@@ -109,6 +136,9 @@ class CircuitDiagramView(QGraphicsView):
 		else:
 			return (int((x - self.startingX) / self.blockSideLength), int((y - self.startingY) / self.blockSideLength))
 
+	def blockIndexToCoordinate(self, x, y):
+		return (self.startingX + self.blockSideLength * x, self.startingY + self.blockSideLength * y)
+
 	def mousePressEvent(self, event):
 		index = self.mouseCoordinatesToBlockIndex(event.x(), event.y())
 		self.mousePress.emit(index, (event.x(), event.y()))
@@ -150,15 +180,22 @@ class CircuitDiagramView(QGraphicsView):
 			for component in self.model.components:
 				pixmap = self.componentToImage(component)
 				pixmapItem = self.scene.addPixmap(pixmap)
-				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
+				offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
+				pixmapItem.setOffset(offset[0],offset[1])
+				pixmapItem.setTransformationMode(Qt.SmoothTransformation)
 		
 				if component is self.selection:
 					if self.dragging:
 						renderPosition = (self.startingX + self.selection.position[0] * self.blockSideLength + self.mousePosition[0] - self.draggingStart[0], self.startingY + self.selection.position[1] * self.blockSideLength + self.mousePosition[1] - self.draggingStart[1])
 						pixmapItem.setOffset(renderPosition[0], renderPosition[1])
-					else:
+					elif self.shouldShowSelection:
 						pen = QPen(QBrush(QColor(0,0,255,100)), 2, Qt.DashLine)
 						self.scene.addRect(self.startingX + component.position[0] * self.blockSideLength, self.startingY + component.position[1] * self.blockSideLength, self.blockSideLength, self.blockSideLength, pen)
+				if component.type is ComponentType.Ammeter:
+					font = QFont("Arial", self.blockSideLength/3.5)
+					reading = self.scene.addText(str("%.2f" % component.current) + "A", font)
+					offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
+					reading.setPos(offset[0]+self.blockSideLength/12,offset[1]+self.blockSideLength/4)
 				
 	def renderCircuitDiagramGrid(self):
 		pen = QPen(QBrush(QColor(200,200,200,255)), 1)

@@ -12,6 +12,7 @@ class App(QApplication):
 		self.model = MainModel()
 		self.controller = MainController(self.model)
 		self.view = MainView(self.model, self.controller)
+		self.controller.view = self.view
 		self.view.show()
 
 if __name__ == '__main__':
