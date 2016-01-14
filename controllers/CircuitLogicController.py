@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from models.components import *
+import math
 
 class CircuitLogicController():
 	def __init__(self, model):
@@ -85,7 +86,8 @@ class CircuitLogicController():
 				break
 
 		if validCircuit and switchClosed:
-			seriesCurrent = totalVoltage / totalResistance
+			seriesCurrent = totalVoltage / totalResistance if totalResistance > 0 else math.inf
+
 			for currentComponent in visitedComponents:
 				currentComponent.current = seriesCurrent
 
