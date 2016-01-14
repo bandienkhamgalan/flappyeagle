@@ -15,7 +15,8 @@ class CircuitDiagramView(QGraphicsView):
 	def __init__(self, parent=None):
 		QGraphicsView.__init__(self, parent)
 
-		self.model = None
+		self._model = None
+		self.controller = None
 
 		self.setAcceptDrops(True)
 
@@ -23,24 +24,50 @@ class CircuitDiagramView(QGraphicsView):
 		self.scene = QGraphicsScene()
 		self.setScene(self.scene)
 
-		# drag and drop
-		self.selection = None
-		self.dragging = False
+		self._shouldShowSelection = False
+		self._selection = None
+		self._dragging = False
 		self.mousePosition = None
 		self.draggingStart = None
 
 		self.render()
 
-	def setModel(self, model):
-		self.model = model
+	@property
+	def shouldShowSelection(self):
+		return self._shouldShowSelection
+
+	@shouldShowSelection.setter
+	def shouldShowSelection(self, value):
+		if self.shouldShowSelection is not value and value is not None:
+			self._shouldShowSelection = value
+			self.render()		
+
+	@property
+	def model(self):
+		return self._model
+
+	@model.setter
+	def model(self, value):
+		self._model = value
 		self.model.modelChanged.connect(self.render)
 
-	def setSelection(self, selection):
-		self.selection = selection
-		self.render()
+	@property
+	def selection(self):
+		return self._selection
 
-	def setDragging(self, dragging):
-		self.dragging = dragging
+	@selection.setter
+	def selection(self, value):
+		if self.selection is not value:
+			self._selection = value
+			self.render()	
+
+	@property
+	def dragging(self):
+		return self._dragging
+
+	@dragging.setter
+	def dragging(self, value):
+		self._dragging = value
 		self.render()
 
 	def componentTypeToImageName(self, componentType):
@@ -153,12 +180,12 @@ class CircuitDiagramView(QGraphicsView):
 				pixmapItem = self.scene.addPixmap(pixmap)
 				pixmapItem.setTransformationMode(Qt.SmoothTransformation)
 				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
-		
+				
 				if component is self.selection:
 					if self.dragging:
 						renderPosition = (self.startingX + self.selection.position[0] * self.blockSideLength + self.mousePosition[0] - self.draggingStart[0], self.startingY + self.selection.position[1] * self.blockSideLength + self.mousePosition[1] - self.draggingStart[1])
 						pixmapItem.setOffset(renderPosition[0], renderPosition[1])
-					else:
+					elif self.shouldShowSelection:
 						pen = QPen(QBrush(QColor(0,0,255,100)), 2, Qt.DashLine)
 						self.scene.addRect(self.startingX + component.position[0] * self.blockSideLength, self.startingY + component.position[1] * self.blockSideLength, self.blockSideLength, self.blockSideLength, pen)
 				

@@ -35,6 +35,12 @@ class MainModel(QObject):
 			self.breadboard[component.position[0]][component.position[1]] = None
 			self.components.remove(component)
 			self.modelChanged.emit()	
+			return True
+		else:
+			return False
+
+	def removeComponentAtIndex(self, index):
+		return self.removeComponent(self.componentAtIndex(index))
 
 	def addConnection(self, component1, component2):
 		print(component1.position)
@@ -76,6 +82,9 @@ class MainModel(QObject):
 			return True
 		else:
 			return False
+
+	def componentAtIndex(self, index):
+		return self.breadboard[index[0]][index[1]] if self.validIndex(index) else None
 
 	def validIndex(self, index):
 		return index is not None and len(index) == 2 and index[0] >= 0 and index[0] < self.gridSize and index[1] >= 0 and index[1] <= self.gridSize
