@@ -154,8 +154,13 @@ class CircuitDiagramView(QGraphicsView):
 			for component in self.model.components:
 				pixmap = self.componentToImage(component)
 				pixmapItem = self.scene.addPixmap(pixmap)
+<<<<<<< HEAD
 				offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
 				pixmapItem.setOffset(offset[0],offset[1])
+=======
+				pixmapItem.setTransformationMode(Qt.SmoothTransformation)
+				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
+>>>>>>> 302726fbb521ce5f84b3562f55f75bf7900088e2
 		
 				if component is self.selection:
 					if self.dragging:

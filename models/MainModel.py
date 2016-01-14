@@ -27,8 +27,6 @@ class MainModel(QObject):
 			self.counter += 1
 			self.breadboard[component.position[0]][component.position[1]] = component
 			self.components.append(component)
-			self.freePositions.remove(component.position)
-
 			self.modelChanged.emit()
 			return True
 		else:
@@ -38,9 +36,7 @@ class MainModel(QObject):
 		if component in self.components:
 			component.removeConnections()
 			self.breadboard[component.position[0]][component.position[1]] = None
-			self.freePositions.append(component.position)
 			self.components.remove(component)
-
 			self.modelChanged.emit()	
 
 	def addConnection(self, component1, component2):

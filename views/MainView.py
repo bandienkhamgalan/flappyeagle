@@ -323,8 +323,6 @@ class MainView(QMainWindow):
 				elif self.newComponentType is ComponentType.Voltmeter:
 					newComponent = Voltmeter()
 
-				print(self.newComponentType, ": ", self.ui.circuitDiagram.componentTypeToImageName(self.newComponentType))
-
 				if newComponent is not None:
 					newComponent.position = index
 					self.model.addComponent(newComponent)

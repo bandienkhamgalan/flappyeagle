@@ -333,8 +333,11 @@
         <property name="horizontalScrollBarPolicy">
          <enum>Qt::ScrollBarAlwaysOff</enum>
         </property>
+        <property name="renderHints">
+         <set>QPainter::HighQualityAntialiasing|QPainter::SmoothPixmapTransform</set>
+        </property>
         <property name="resizeAnchor">
-         <enum>QGraphicsView::NoAnchor</enum>
+         <enum>QGraphicsView::AnchorViewCenter</enum>
         </property>
         <property name="viewportUpdateMode">
          <enum>QGraphicsView::FullViewportUpdate</enum>
