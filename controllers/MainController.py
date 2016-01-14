@@ -80,9 +80,11 @@ class MainController():
 		if value is not self._tool:
 			self.previousTool = self._tool
 			self._tool = value
-			self.mode = Mode.Build
 			self.view.ui.circuitDiagram.shouldShowSelection = self.tool is Tool.Select
-		self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
+		if self.mode is Mode.Run:
+			self.mode = Mode.Build
+		else:
+			self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
 
 	@property
 	def mouseState(self):
