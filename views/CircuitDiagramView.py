@@ -151,6 +151,7 @@ class CircuitDiagramView(QGraphicsView):
 			for component in self.model.components:
 				pixmap = self.componentToImage(component)
 				pixmapItem = self.scene.addPixmap(pixmap)
+				pixmapItem.setTransformationMode(Qt.SmoothTransformation)
 				pixmapItem.setOffset(self.startingX + self.blockSideLength * component.position[0], self.startingY + self.blockSideLength * component.position[1])
 		
 				if component is self.selection:
