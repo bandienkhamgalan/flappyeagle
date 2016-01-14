@@ -43,6 +43,7 @@ class CircuitLogicController():
 		totalVoltage = 0
 		totalResistance = 0
 		switchClosed = True
+		validCircuit = True
 		while True:
 			exitingConnections = currentComponent.exitingConnections(currentEnteringDirection)
 
@@ -62,7 +63,8 @@ class CircuitLogicController():
 					totalVoltage += currentComponent.voltage
 					if currentComponent.negativeSide is currentEnteringDirection:
 						# invalid circuit
-						return False	
+						validCircuit =  False	
+						break
 
 				if (currentComponent.type is ComponentType.Button or currentComponent.type is ComponentType.Switch) and not currentComponent.closed:
 					switchClosed = False
@@ -79,9 +81,10 @@ class CircuitLogicController():
 				pass
 			else:
 				# invalid circuit
-				return False
+				validCircuit = False
+				break
 
-		if switchClosed:
+		if validCircuit and switchClosed:
 			seriesCurrent = totalVoltage / totalResistance
 			for currentComponent in visitedComponents:
 				currentComponent.current = seriesCurrent
