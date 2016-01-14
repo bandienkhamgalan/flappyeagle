@@ -35,9 +35,8 @@ class MainView(QMainWindow):
 		self.ui.deleteMode.clicked.connect(self.setDeleteMode)
 		self.ui.selectMode.clicked.connect(self.setSelectMode)
 
-		# toolbar drag and drop
-		self.newComponentDrag = None
-		self.newComponentType = None
+		self.ui.runMode.clicked.connect(self.setRunMode)
+		self.ui.buildMode.clicked.connect(self.setBuildMode)
 		
 		self.toolbarComponents = []
 		self.ui.newBattery.componentType = ComponentType.Battery
@@ -71,35 +70,67 @@ class MainView(QMainWindow):
 		self.ui.actionNew.setShortcut('Ctrl+N')
 		self.ui.actionNew.setStatusTip('New document')
 
-	def updateCursor(self, tool, mouseState):
-		if tool is Tool.Select:
-			if mouseState is MouseState.Dragging:
-				QApplication.setOverrideCursor(QCursor(Qt.ClosedHandCursor))
-			else:
-				QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
-		elif tool is Tool.Wire:
-			QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
-		elif tool is Tool.Delete:
-			QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
-		elif tool is Tool.NewComponent:
-			QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
-	
-	def setSelectMode(self):
-		self.ui.selectMode.setChecked(True)
+	def newComponentButtonMousePress(self, componentType, event):
+		self.ui.build.setChecked(True)
 		self.ui.wireMode.setChecked(False)
 		self.ui.deleteMode.setChecked(False)
+		self.ui.selectMode.setChecked(True)
+		self.controller.bulbsOff()
+		self.model.reRender()
+
+		self.cursorState = CursorState.NewComponentDragging
+		self.newComponentType = componentType
+		self.newComponentDrag = QDrag(self)
+		self.newComponentDrag.setHotSpot(QPoint(self.ui.circuitDiagram.blockSideLength / 2, self.ui.circuitDiagram.blockSideLength / 2))
+		self.newComponentDrag.setMimeData(QMimeData())
+		self.newComponentDrag.setPixmap(QPixmap(self.ui.circuitDiagram.componentTypeToImageName(componentType)).scaled(self.ui.circuitDiagram.blockSideLength, self.ui.circuitDiagram.blockSideLength))
+		QApplication.setOverrideCursor(QCursor(Qt.ForbiddenCursor))
+		self.newComponentDrag.exec_(Qt.MoveAction)
+
+		self.cursorState = CursorState.Select
+		self.ui.selectMode.setChecked(True)
+		self.updateCursor()
+
+	def updateCursorAndToolButtons(self, mode, tool, mouseState):
+		self.ui.selectMode.setChecked(False)
+		self.ui.wireMode.setChecked(False)
+		self.ui.deleteMode.setChecked(False)
+		self.ui.runMode.setChecked(False)
+		self.ui.buildMode.setChecked(False)
+
+		if mode is Mode.Build:
+			self.ui.buildMode.setChecked(True)
+			if tool is Tool.Select:
+				self.ui.selectMode.setChecked(True)
+				if mouseState is MouseState.Dragging:
+					QApplication.setOverrideCursor(QCursor(Qt.ClosedHandCursor))
+				else:
+					QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
+			elif tool is Tool.Wire:
+				self.ui.wireMode.setChecked(True)
+				QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
+			elif tool is Tool.Delete:
+				self.ui.deleteMode.setChecked(True)
+				QApplication.setOverrideCursor(QCursor(Qt.CrossCursor))
+			elif tool is Tool.NewComponent:
+				QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
+		elif mode is Mode.Run:
+			QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
+			self.ui.runMode.setChecked(True)
+
+	def setRunMode(self):
+		self.controller.mode = Mode.Run
+
+	def setBuildMode(self):
+		self.controller.mode = Mode.Build
+
+	def setSelectMode(self):
 		self.controller.tool = Tool.Select
 
 	def setWireMode(self):
-		self.ui.selectMode.setChecked(False)
-		self.ui.wireMode.setChecked(True)
-		self.ui.deleteMode.setChecked(False)
 		self.controller.tool = Tool.Wire
 		
 	def setDeleteMode(self):
-		self.ui.selectMode.setChecked(False)
-		self.ui.wireMode.setChecked(False)
-		self.ui.deleteMode.setChecked(True)
 		self.controller.tool = Tool.Delete
 
 	def closeEvent(self, event):

@@ -10,6 +10,13 @@ class CircuitLogicController():
 		for component in self.model.components:
 			print(component)
 
+	def bulbsOff(self):
+		for component in self.model.components:
+			if component.type is ComponentType.Bulb:
+				component.voltage = 0.0
+				component.current = 0.0
+		self.model.modelChanged.emit()
+
 	def runBreadboard(self):
 		# reset and find batteries
 		batteries = []
@@ -57,7 +64,7 @@ class CircuitLogicController():
 						# invalid circuit
 						return False	
 
-				if currentComponent.type is ComponentType.Button or currentComponent.type is ComponentType.Switch and not currentComponent.closed:
+				if (currentComponent.type is ComponentType.Button or currentComponent.type is ComponentType.Switch) and not currentComponent.closed:
 					switchClosed = False
 
 				visitedComponents.append(currentComponent)
@@ -86,5 +93,7 @@ class CircuitLogicController():
 					except AttributeError:
 						pass
 					currentComponent.voltage = currentComponent.current * resistance
+			
+		self.model.modelChanged.emit()
 
 		return True

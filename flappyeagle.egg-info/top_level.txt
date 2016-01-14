@@ -1,4 +1,0 @@
-controllers
-models
-testing
-views

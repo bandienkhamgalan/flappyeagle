@@ -17,27 +17,35 @@ class MouseState(Enum):
 	Normal = 0
 	Dragging = 1
 
+class Mode(Enum):
+	Build = 0
+	Run = 1
+
 class MainController():
 	def __init__(self, model=None, view=None):
 		self._view = None
 		self._model = None
 
 		# instantiate sub controllers
-		self.circuitLogicController = CircuitLogicController(model)
+		self.circuitLogic = CircuitLogicController(model)
 
 		# default states
 		self.previousTool = None
+		self._mode = Mode.Run
 		self._tool = Tool.Select
 		self._mouseState = MouseState.Normal
 
-		# wire tool variables
+		# circuit diagram variables
+		#   wire tool
 		self.wirePath = []
 		self.currentBlock = (None, None)
-
-		# new component tool variable
+		#   drag and drop new component
 		self.newComponentType = None
-
+		# 	drag and drop existing component
 		self._selection = None
+
+		# run mode variable
+		self.buttonHeld = (None, None)
 
 		self.view = view
 		self.model = model 
@@ -50,62 +58,52 @@ class MainController():
 		if self.view is None and value is not self.view:
 			self._view = value
 			self.updateProperties()
-
+	
+	@property
+	def mode(self):
+		return self._mode
+	@mode.setter
+	def mode(self, value):
+		if value is not self.mode:
+			self._mode = value
+			if self.mode is Mode.Run:
+				self.circuitLogic.runBreadboard()
+			else:
+				self.circuitLogic.bulbsOff()
+		self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
+	
 	@property
 	def tool(self):
 		return self._tool
-
 	@tool.setter
 	def tool(self, value):
 		if value is not self._tool:
 			self.previousTool = self._tool
 			self._tool = value
-			self.view.updateCursor(self.tool, self.mouseState)
+			self.mode = Mode.Build
 			self.view.ui.circuitDiagram.shouldShowSelection = self.tool is Tool.Select
+		self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
 
 	@property
 	def mouseState(self):
 		return self._mouseState
-
 	@mouseState.setter
 	def mouseState(self, value):
 		if value is not self._mouseState:
 			self._mouseState = value
-			self.view.updateCursor(self.tool, self.mouseState)
-
 			if self.tool is Tool.Select:
 				self.view.ui.circuitDiagram.dragging = value is MouseState.Dragging
+		self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
 
 	@property
 	def selection(self):
 	    return self._selection
-
 	@selection.setter
 	def selection(self, value):
 		if self.selection is not value:
 			self._selection = value
 			self.updateProperties()
 			self.view.ui.circuitDiagram.selection = self.selection
-			
-	def circuitDiagramMousePress(self, index, coordinate):
-		if self.tool is Tool.Select:
-			if self.model.componentAtIndex(index) is not None:
-				self.view.ui.circuitDiagram.draggingStart = coordinate
-				print("about to start dragging: ", self.view.ui.circuitDiagram.draggingStart)
-				self.selection = self.model.componentAtIndex(index)
-				self.mouseState = MouseState.Dragging
-		elif self.tool is Tool.Wire:
-			if self.model.componentAtIndex(index) is not None:
-				# print("starting wire at ", index)
-				self.mouseState = MouseState.Dragging
-				self.currentBlock = index
-				self.wirePath = [index]
-			else:
-				pass
-				# print("invalid wire start")
-		elif self.tool is Tool.Delete:
-			if self.model.componentAtIndex(index) is not None:
-				self.model.removeComponentAtIndex(index)
 
 	def updateProperties(self):
 		if self.view is not None:
@@ -136,6 +134,36 @@ class MainController():
 					self.view.ui.closedLabel.show()
 					self.view.ui.closed.show()
 					self.view.ui.closed.setChecked(self.selection.closed)
+			
+	def circuitDiagramMousePress(self, index, coordinate):
+		if self.mode is Mode.Build:
+			if self.tool is Tool.Select:
+				if self.model.componentAtIndex(index) is not None:
+					self.view.ui.circuitDiagram.draggingStart = coordinate
+					print("about to start dragging: ", self.view.ui.circuitDiagram.draggingStart)
+					self.selection = self.model.componentAtIndex(index)
+					self.mouseState = MouseState.Dragging
+			elif self.tool is Tool.Wire:
+				if self.model.componentAtIndex(index) is not None:
+					# print("starting wire at ", index)
+					self.mouseState = MouseState.Dragging
+					self.currentBlock = index
+					self.wirePath = [index]
+				else:
+					pass
+					# print("invalid wire start")
+			elif self.tool is Tool.Delete:
+				if self.model.componentAtIndex(index) is not None:
+					self.model.removeComponentAtIndex(index)
+		elif self.mode is Mode.Run:
+			if self.model.componentAtIndex(index) is not None:
+				if self.model.componentAtIndex(index).type is ComponentType.Switch:
+					self.model.componentAtIndex(index).flip()
+					self.circuitLogic.runBreadboard()
+				elif self.model.componentAtIndex(index).type is ComponentType.Button:
+					self.model.componentAtIndex(index).flip()
+					self.buttonHeld = index
+					self.circuitLogic.runBreadboard()
 
 	def circuitDiagramMouseMove(self, index, coordinate):
 		if self.tool is Tool.Select and self.mouseState is MouseState.Dragging:
@@ -200,45 +228,50 @@ class MainController():
 								self.model.addConnection(self.model.componentAtIndex(self.wirePath[-2]), self.model.componentAtIndex(self.wirePath[-1]))
 
 	def circuitDiagramMouseRelease(self, index, coordinate):
-		if self.tool is Tool.Select:
-			if self.mouseState is MouseState.Normal:
-				self.selection = self.model.componentAtIndex(index)
-			elif self.mouseState is MouseState.Dragging:
-				if self.model.validIndex(index) and self.model.componentAtIndex(index) is None:
-					self.model.moveComponent(self.selection, index)
-					print("moved %s to %s" % (self.selection, index))
+		if self.mode is Mode.Build:
+			if self.tool is Tool.Select:
+				if self.mouseState is MouseState.Normal:
+					self.selection = self.model.componentAtIndex(index)
+				elif self.mouseState is MouseState.Dragging:
+					if self.model.validIndex(index) and self.model.componentAtIndex(index) is None:
+						self.model.moveComponent(self.selection, index)
+						print("moved %s to %s" % (self.selection, index))
+					else:
+						print("invalid move")
+			elif self.tool is Tool.Wire:
+				if self.model.validIndex(index):
+					print("valid end wire at ", index)
 				else:
-					print("invalid move")
-		elif self.tool is Tool.Wire:
-			if self.model.validIndex(index):
-				print("valid end wire at ", index)
-			else:
-				print("invalid wire")	
-		elif self.tool is Tool.NewComponent:
-			newComponent = None
-			if self.model.validIndex(index) and self.model.componentAtIndex(index) is None:
-				if self.newComponentType is ComponentType.Battery:
-					newComponent = Battery()
-				elif self.newComponentType is ComponentType.Bulb:
-					newComponent = Bulb()
-				elif self.newComponentType is ComponentType.Resistor:
-					newComponent = Resistor()
-				elif self.newComponentType is ComponentType.Switch:
-					newComponent = Switch()
-				elif self.newComponentType is ComponentType.Button:
-					newComponent = Button()
-				elif self.newComponentType is ComponentType.Ammeter:
-					newComponent = Ammeter()
-				elif self.newComponentType is ComponentType.Voltmeter:
-					newComponent = Voltmeter()
+					print("invalid wire")	
+			elif self.tool is Tool.NewComponent:
+				newComponent = None
+				if self.model.validIndex(index) and self.model.componentAtIndex(index) is None:
+					if self.newComponentType is ComponentType.Battery:
+						newComponent = Battery()
+					elif self.newComponentType is ComponentType.Bulb:
+						newComponent = Bulb()
+					elif self.newComponentType is ComponentType.Resistor:
+						newComponent = Resistor()
+					elif self.newComponentType is ComponentType.Switch:
+						newComponent = Switch()
+					elif self.newComponentType is ComponentType.Button:
+						newComponent = Button()
+					elif self.newComponentType is ComponentType.Ammeter:
+						newComponent = Ammeter()
+					elif self.newComponentType is ComponentType.Voltmeter:
+						newComponent = Voltmeter()
 
-				if newComponent is not None:
-					newComponent.position = index
-					self.model.addComponent(newComponent)
-			
-			self.tool = self.previousTool
-			self.mouseState = MouseState.Normal
-			self.selection = newComponent			
+					if newComponent is not None:
+						newComponent.position = index
+						self.model.addComponent(newComponent)
+				self.tool = self.previousTool
+				self.mouseState = MouseState.Normal
+				self.selection = newComponent	
+		elif self.mode is Mode.Run:
+			if self.buttonHeld != (None, None):
+				self.model.componentAtIndex(self.buttonHeld).flip()
+				self.buttonHeld = (None, None)
+				self.circuitLogic.runBreadboard()	
 	
 		self.mouseState = MouseState.Normal
 
@@ -252,5 +285,3 @@ class MainController():
 		newComponentDrag.setMimeData(QMimeData())
 		newComponentDrag.setPixmap(QPixmap(self.view.ui.circuitDiagram.componentTypeToImageName(componentType)).scaled(self.view.ui.circuitDiagram.blockSideLength, self.view.ui.circuitDiagram.blockSideLength))
 		newComponentDrag.exec_(Qt.MoveAction)
-
-		# HANDLE DRAGGING OUTSIDE GRAPHICS VIEW
