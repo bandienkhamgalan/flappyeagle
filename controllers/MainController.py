@@ -161,10 +161,12 @@ class MainController():
 			if self.model.componentAtIndex(index) is not None:
 				if self.model.componentAtIndex(index).type is ComponentType.Switch:
 					self.model.componentAtIndex(index).flip()
+					self.model.modelChanged.emit()
 					self.circuitLogic.runBreadboard()
 				elif self.model.componentAtIndex(index).type is ComponentType.Button:
 					self.model.componentAtIndex(index).flip()
 					self.buttonHeld = index
+					self.model.modelChanged.emit()
 					self.circuitLogic.runBreadboard()
 
 	def circuitDiagramMouseMove(self, index, coordinate):
@@ -272,6 +274,7 @@ class MainController():
 		elif self.mode is Mode.Run:
 			if self.buttonHeld != (None, None):
 				self.model.componentAtIndex(self.buttonHeld).flip()
+				self.model.modelChanged.emit()
 				self.buttonHeld = (None, None)
 				self.circuitLogic.runBreadboard()	
 	
