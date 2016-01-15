@@ -195,8 +195,12 @@ class CircuitDiagramView(QGraphicsView):
 					font = QFont("Arial", self.blockSideLength/3.5)
 					reading = self.scene.addText(str("%.2f" % component.current) + "A", font)
 					offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
-					reading.setPos(offset[0]+self.blockSideLength/12,offset[1]+self.blockSideLength/4)
-				
+					reading.setPos(offset[0]+self.blockSideLength/20,offset[1]+self.blockSideLength/4)
+				if component.type is ComponentType.Voltmeter:
+					font = QFont("Arial", self.blockSideLength/3.5)
+					reading = self.scene.addText(str("%.2f" % component.voltage) + "V", font)
+					offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
+					reading.setPos(offset[0]+self.blockSideLength/20,offset[1]+self.blockSideLength/4)
 	def renderCircuitDiagramGrid(self):
 		pen = QPen(QBrush(QColor(200,200,200,255)), 1)
 		pen2 = QPen(QBrush(QColor(100,100,100,255)), 3)
