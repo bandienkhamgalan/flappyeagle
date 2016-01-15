@@ -30,6 +30,7 @@ class MainView(QMainWindow):
 		self.ui.circuitDiagram.mouseMove.connect(self.controller.circuitDiagramMouseMove)
 		self.ui.circuitDiagram.mouseRelease.connect(self.controller.circuitDiagramMouseRelease)
 
+
 		#### SETUP TOOLBAR
 		self.ui.wireMode.clicked.connect(self.setWireMode)
 		self.ui.deleteMode.clicked.connect(self.setDeleteMode)
@@ -70,18 +71,24 @@ class MainView(QMainWindow):
 		self.ui.actionNew.setShortcut('Ctrl+N')
 		self.ui.actionNew.setStatusTip('New document')
 		
-		saveMenu = self.menuBar().addMenu('Save')
-		openAction = saveMenu.addAction('Open File...')
-		openAction.triggered.connect(self.showFileDialog)
-		saveAction = saveMenu.addAction('Save File')
-		saveAction.triggered.connect(self.showSaveDialog)
-		saveAsAction = saveMenu.addAction('Save As...')
-		saveAsAction.triggered.connect(self.saveAs)
-		saveAction.setShortcut('Ctrl+S')
-		saveAsAction.setShortcut('Ctrl+Shift+S')
-		openAction.setShortcut('Ctrl+O')
+		self.ui.actionOpen.triggered.connect(self.showFileDialog)
+		self.ui.actionSave.triggered.connect(self.showSaveDialog)
+		self.ui.actionSaveAs.triggered.connect(self.saveAs)
+		self.ui.actionNew.triggered.connect(self.newFile)
+		self.ui.actionSave.setShortcut('Ctrl+S')
+		self.ui.actionSaveAs.setShortcut('Ctrl+Shift+S')
+		self.ui.actionOpen.setShortcut('Ctrl+O')
+		self.ui.actionNew.setShortcut('Ctrl+N')
 		
 		self.savePath = None
+
+	def newFile(self):
+		reply = QMessageBox.question(self, "Message", "Opening a new file overwrites the current file. Do you want to save the current file?", QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel, QMessageBox.Yes)
+		if reply == QMessageBox.No:
+			self.model.clearModel()
+		elif reply == QMessageBox.Yes:
+			self.showSaveDialog()
+			self.statusBar().showMessage('Saved')
 
 	def saveAs(self):
 		fname = QFileDialog.getSaveFileName(self, 'Save file', 'breadboard.eagle')
@@ -110,6 +117,7 @@ class MainView(QMainWindow):
 		else:
 			self.model.saveModel(self.savePath)
 			self.statusBar().showMessage('Saved')
+
 
 	def newComponentButtonMousePress(self, componentType, event):
 		self.ui.build.setChecked(True)
@@ -159,6 +167,7 @@ class MainView(QMainWindow):
 			QApplication.setOverrideCursor(QCursor(Qt.ArrowCursor))
 			self.ui.runMode.setChecked(True)
 
+
 	def setRunMode(self):
 		self.controller.mode = Mode.Run
 
@@ -169,9 +178,25 @@ class MainView(QMainWindow):
 		self.controller.tool = Tool.Select
 
 	def setWireMode(self):
+		self.ui.componentTypeLabel.hide()
+		self.ui.componentType.hide()
+		self.ui.closedLabel.hide()
+		self.ui.closed.hide()
+		self.ui.resistanceLabel.hide()
+		self.ui.resistance.hide()
+		self.ui.voltageLabel.hide()
+		self.ui.voltage.hide()
 		self.controller.tool = Tool.Wire
 		
 	def setDeleteMode(self):
+		self.ui.componentTypeLabel.hide()
+		self.ui.componentType.hide()
+		self.ui.closedLabel.hide()
+		self.ui.closed.hide()
+		self.ui.resistanceLabel.hide()
+		self.ui.resistance.hide()
+		self.ui.voltageLabel.hide()
+		self.ui.voltage.hide()
 		self.controller.tool = Tool.Delete
 
 	def closeEvent(self, event):
@@ -179,6 +204,6 @@ class MainView(QMainWindow):
 
 		if reply == QMessageBox.No:
 			event.accept()
-		else:
+		elif reply ==QMessageBox.Yes:
 			self.showSaveDialog()
 			event.accept()

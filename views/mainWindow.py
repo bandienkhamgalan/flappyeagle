@@ -306,12 +306,14 @@ class Ui_mainWindow(object):
         self.actionClose = QtWidgets.QAction(mainWindow)
         self.actionClose.setIconVisibleInMenu(True)
         self.actionClose.setObjectName("actionClose")
+        self.actionSaveAs = QtWidgets.QAction(mainWindow)
+        self.actionSaveAs.setObjectName("actionSaveAs")
         self.menuFile.addAction(self.actionNew)
         self.menuFile.addAction(self.actionOpen)
         self.menuFile.addSeparator()
         self.menuFile.addAction(self.actionSave)
+        self.menuFile.addAction(self.actionSaveAs)
         self.menuFile.addSeparator()
-        self.menuFile.addAction(self.actionClose)
         self.menubar.addAction(self.menuFile.menuAction())
         self.menubar.addAction(self.menuEdit.menuAction())
         self.menubar.addAction(self.menuWindow.menuAction())
@@ -356,6 +358,7 @@ class Ui_mainWindow(object):
         self.actionOpen.setText(_translate("mainWindow", "Open"))
         self.actionSave.setText(_translate("mainWindow", "Save"))
         self.actionClose.setText(_translate("mainWindow", "Close"))
+        self.actionSaveAs.setText(_translate("mainWindow", "Save As"))
 
 from views.CircuitDiagramView import CircuitDiagramView
 from views.DraggableComponentButton import DraggableComponentButton

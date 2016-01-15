@@ -43,6 +43,7 @@ class MainModel(QObject):
 
 	def addConnection(self, component1, component2):
 		if component1.position[0] == component2.position[0]:
+			# vertical
 			if abs(component1.position[1] - component2.position[1]) != 1:
 				return False
 			else:
@@ -55,6 +56,7 @@ class MainModel(QObject):
 				self.modelChanged.emit()
 				return True
 		elif component1.position[1] == component2.position[1]:
+			# horizontal
 			if abs(component1.position[0] - component2.position[0]) != 1:
 				return False
 			else:
@@ -201,7 +203,7 @@ class MainModel(QObject):
 							currentComponent.connections[2] = self.breadboard[int(encodedConnections[4])][int(encodedConnections[5])]
 						if encodedConnections[6] != "NA":
 							currentComponent.connections[3] = self.breadboard[int(encodedConnections[6])][int(encodedConnections[7])]
-						print(currentComponent)
+						# print(currentComponent)
 			self.modelChanged.emit()
 			return True
 		except Exception as e:
