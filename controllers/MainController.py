@@ -69,7 +69,7 @@ class MainController():
 			if self.mode is Mode.Run:
 				self.circuitLogic.runBreadboard()
 			else:
-				self.circuitLogic.bulbsOff()
+				self.circuitLogic.stopBreadboard()
 		self.view.updateCursorAndToolButtons(self.mode, self.tool, self.mouseState)
 	
 	@property
@@ -131,7 +131,7 @@ class MainController():
 				elif self.selection.type is ComponentType.Bulb or self.selection.type is ComponentType.Resistor:
 					self.view.ui.resistanceLabel.show()
 					self.view.ui.resistance.show()
-					self.view.ui.voltage.setValue(self.selection.resistance)
+					self.view.ui.resistance.setValue(self.selection.resistance)
 				elif self.selection.type is ComponentType.Switch or self.selection.type is ComponentType.Button:
 					self.view.ui.closedLabel.show()
 					self.view.ui.closed.show()
@@ -188,8 +188,8 @@ class MainController():
 					print(self.wirePath)
 					self.currentBlock = index
 					if self.model.componentAtIndex(self.currentBlock) is not None:
-						if self.model.componentAtIndex(self.currentBlock).numberOfConnections() < 2:
-							# wire has formed a connection to existing component
+						if self.model.componentAtIndex(self.currentBlock).numberOfConnections() < 2 or (self.model.componentAtIndex(self.currentBlock).numberOfConnections() == 2 and self.model.componentAtIndex(self.currentBlock).type == ComponentType.Wire):
+							# wire has formed a connection to existing component, or making a "junction"
 							self.model.addConnection(self.model.componentAtIndex(self.wirePath[-2]), self.model.componentAtIndex(self.wirePath[-1]))
 							if self.model.componentAtIndex(self.currentBlock).type in [ComponentType.Battery, ComponentType.Switch, ComponentType.Button, ComponentType.Resistor] and (self.currentBlock[0] == self.wirePath[-2][0]):
 								self.wirePath.pop()
@@ -199,7 +199,7 @@ class MainController():
 										self.model.removeComponentAtIndex(block)
 								self.mouseState = MouseState.Normal
 						else:
-							# wire has formed 3rd connection to existing component -> end and destroy wires in invalid path here
+							# wire has formed a bad number of connections to existing component -> end and destroy wires in invalid path here
 							self.wirePath.pop()
 							self.wirePath.pop(0)
 							for block in self.wirePath:
@@ -217,8 +217,10 @@ class MainController():
 									self.model.removeComponentAtIndex(block)
 							self.mouseState = MouseState.Normal
 						else: 
-							if self.model.componentAtIndex(self.wirePath[-2]).numberOfConnections() > 1:
-								# trying to add a wire which would create a 3rd connection on previous wire -> end invalid wire keep valid portion of wire up to invalid component
+							if (self.model.componentAtIndex(self.wirePath[-2]).numberOfConnections() > 1 and self.model.componentAtIndex(self.wirePath[-2]).type is not ComponentType.Wire) or (self.model.componentAtIndex(self.wirePath[-2]).numberOfConnections() > 2 and self.model.componentAtIndex(self.wirePath[-2]).type is ComponentType.Wire):
+								# trying to add a wire which would create a 3rd connection on a non-wire component -> end invalid wire keep valid portion of wire up to invalid component
+								########## OR
+								# trying to add a wire which would create a 4th connection on junction wire -> end invalid wire keep valid portion of wire up to invalid component
 								self.mouseState = MouseState.Normal
 							else:
 								wireComponent = Wire()

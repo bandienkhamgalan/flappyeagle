@@ -84,51 +84,60 @@ class CircuitDiagramView(QGraphicsView):
 		return dictionary[componentType]
 
 	def componentToImage(self, component):
-		imageName = "assets/icon.png"
-		
 		if component.type == ComponentType.Wire:
-			if component.connections[Direction.Top] is not None:
+			image = QPixmap("assets/icon.png").scaled(self.blockSideLength, self.blockSideLength)
+			if component.numberOfConnections() == 1:
+				image = QPixmap("assets/wire-top.png").scaled(self.blockSideLength, self.blockSideLength)
 				if component.connections[Direction.Right] is not None:
-					imageName = "assets/wire-topright.png"
+					image = image.transformed(QtGui.QTransform().rotate(90))
 				elif component.connections[Direction.Bottom] is not None:
-					imageName = "assets/wire-topbottom.png"
+					image = image.transformed(QtGui.QTransform().rotate(180))
 				elif component.connections[Direction.Left] is not None:
-					imageName = "assets/wire-topleft.png"
-				else:
-					imageName = "assets/wire-top.png"
-			elif component.connections[Direction.Right] is not None:
-				if component.connections[Direction.Bottom] is not None:
-					imageName = "assets/wire-bottomright.png"
-				elif component.connections[Direction.Left] is not None:
-					imageName = "assets/wire-leftright.png"
-				else:
-					imageName = "assets/wire-right.png"
-			elif component.connections[Direction.Left] is not None:
-				if component.connections[Direction.Bottom] is not None:
-					imageName = "assets/wire-bottomleft.png"
-				else:
-					imageName = "assets/wire-left.png"
-			else:
-				imageName = "assets/wire-bottom.png"
-		elif component.type == ComponentType.Bulb:
-			if component.isOn():
-				imageName = "assets/bulb-on.png"
-			else:
-				imageName = "assets/bulb-off.png"
-		elif component.type == ComponentType.Switch:
-			if component.closed:
-				imageName = "assets/switch-on.png"
-			else:
-				imageName = "assets/switch-off.png"
-		elif component.type == ComponentType.Button:
-			if component.closed:
-				imageName = "assets/button-on.png"
-			else:
-				imageName = "assets/button-off.png"
+					image = image.transformed(QtGui.QTransform().rotate(270))
+			elif component.numberOfConnections() == 2:
+				if component.connections[Direction.Left] is not None and component.connections[Direction.Right] is not None:
+					image = QPixmap("assets/wire-left-right.png").scaled(self.blockSideLength, self.blockSideLength)
+				elif component.connections[Direction.Top] is not None and component.connections[Direction.Bottom] is not None:
+					image = QPixmap("assets/wire-left-right.png").scaled(self.blockSideLength, self.blockSideLength).transformed(QtGui.QTransform().rotate(90))
+				elif component.connections[Direction.Top] is not None and component.connections[Direction.Right] is not None:
+					image = QPixmap("assets/wire-top-right.png").scaled(self.blockSideLength, self.blockSideLength)
+				elif component.connections[Direction.Top] is not None and component.connections[Direction.Left] is not None:
+					image = QPixmap("assets/wire-top-right.png").scaled(self.blockSideLength, self.blockSideLength).transformed(QtGui.QTransform().rotate(270))
+				elif component.connections[Direction.Bottom] is not None and component.connections[Direction.Right] is not None:
+					image = QPixmap("assets/wire-top-right.png").scaled(self.blockSideLength, self.blockSideLength).transformed(QtGui.QTransform().rotate(90))
+				elif component.connections[Direction.Bottom] is not None and component.connections[Direction.Left] is not None:
+					image = QPixmap("assets/wire-top-right.png").scaled(self.blockSideLength, self.blockSideLength).transformed(QtGui.QTransform().rotate(180))
+			elif component.numberOfConnections() == 3:
+				image = QPixmap("assets/wire-left-top-right.png").scaled(self.blockSideLength, self.blockSideLength)
+				if component.connections[Direction.Left] is None:
+					image = image.transformed(QtGui.QTransform().rotate(90))
+				elif component.connections[Direction.Top] is None:
+					image = image.transformed(QtGui.QTransform().rotate(180))
+				elif component.connections[Direction.Right] is None:
+					image = image.transformed(QtGui.QTransform().rotate(270))
+			return image
 		else:
-			imageName = self.componentTypeToImageName(component.type)
+			imageName = "assets/wire-right.png"
 		
-		return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
+			if component.type == ComponentType.Bulb:
+				if component.isOn():
+					imageName = "assets/bulb-on.png"
+				else:
+					imageName = "assets/bulb-off.png"
+			elif component.type == ComponentType.Switch:
+				if component.closed:
+					imageName = "assets/switch-on.png"
+				else:
+					imageName = "assets/switch-off.png"
+			elif component.type == ComponentType.Button:
+				if component.closed:
+					imageName = "assets/button-on.png"
+				else:
+					imageName = "assets/button-off.png"
+			else:
+				imageName = self.componentTypeToImageName(component.type)
+			
+			return QPixmap(imageName).scaled(self.blockSideLength, self.blockSideLength)
 
 	def mouseCoordinatesToBlockIndex(self, x, y):
 		if self.model is None or x < self.startingX or y < self.startingY or x > self.startingX + self.model.gridSize * self.blockSideLength or y > self.startingY + self.model.gridSize * self.blockSideLength:
@@ -194,6 +203,11 @@ class CircuitDiagramView(QGraphicsView):
 				if component.type is ComponentType.Ammeter:
 					font = QFont("Arial", self.blockSideLength/3.5)
 					reading = self.scene.addText(str("%.2f" % component.current) + "A", font)
+					offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
+					reading.setPos(offset[0]+self.blockSideLength/12,offset[1]+self.blockSideLength/4)
+				if component.type is ComponentType.Voltmeter:
+					font = QFont("Arial", self.blockSideLength/3.5)
+					reading = self.scene.addText(str("%.2f" % component.voltage) + "V", font)
 					offset = self.blockIndexToCoordinate(component.position[0],component.position[1])
 					reading.setPos(offset[0]+self.blockSideLength/12,offset[1]+self.blockSideLength/4)
 				
