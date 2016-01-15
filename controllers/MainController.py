@@ -81,6 +81,7 @@ class MainController():
 			self.previousTool = self._tool
 			self._tool = value
 			self.view.ui.circuitDiagram.shouldShowSelection = self.tool is Tool.Select
+			self.updateProperties()
 		if self.mode is Mode.Run:
 			self.mode = Mode.Build
 		else:
@@ -108,7 +109,7 @@ class MainController():
 			self.view.ui.circuitDiagram.selection = self.selection
 
 	def updateProperties(self):
-		if self.view is not None:
+		if self.view is not None and self.tool is Tool.Select:
 			self.view.ui.componentTypeLabel.hide()
 			self.view.ui.componentType.hide()
 			self.view.ui.componentType.clear()
@@ -127,15 +128,40 @@ class MainController():
 				if self.selection.type is ComponentType.Battery:
 					self.view.ui.voltageLabel.show()
 					self.view.ui.voltage.show()
+					self.view.ui.voltage.setRange(0.0, 24.0)
+					self.view.ui.voltage.setSingleStep(1.0)
+					self.view.ui.voltage.setEnabled(True)
 					self.view.ui.voltage.setValue(self.selection.voltage)
+					self.view.ui.voltage.valueChanged.connect(self.updateVoltage)		
 				elif self.selection.type is ComponentType.Bulb or self.selection.type is ComponentType.Resistor:
 					self.view.ui.resistanceLabel.show()
 					self.view.ui.resistance.show()
+					self.view.ui.resistance.setRange(0.0, 24.0)
+					self.view.ui.resistance.setSingleStep(1.0)
+					self.view.ui.resistance.setEnabled(True)
 					self.view.ui.resistance.setValue(self.selection.resistance)
-				elif self.selection.type is ComponentType.Switch or self.selection.type is ComponentType.Button:
+					self.view.ui.resistance.valueChanged.connect(self.updateResistance)
+				elif self.selection.type is ComponentType.Switch:
 					self.view.ui.closedLabel.show()
 					self.view.ui.closed.show()
 					self.view.ui.closed.setChecked(self.selection.closed)
+					self.view.ui.closed.setEnabled(True)
+					self.view.ui.closed.stateChanged.connect(self.updateSwitch)
+
+
+	def updateVoltage(self):
+		updatedVoltage = self.view.ui.voltage.value()
+		self.selection.voltage = updatedVoltage
+
+	def updateResistance(self):
+		updatedResistance = self.view.ui.resistance.value()
+		self.selection.resistance = updatedResistance
+
+	def updateSwitch(self):
+		if self.view.ui.closed.isChecked():
+			self.selection.closed = True
+		else:
+			 self.selection.closed = False
 			
 	def circuitDiagramMousePress(self, index, coordinate):
 		if self.mode is Mode.Build:
