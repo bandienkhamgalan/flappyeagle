@@ -10,6 +10,7 @@ from models.components import *
 from controllers.MainController import *
 from enum import Enum
 
+
 class MainView(QMainWindow):
 	def __init__(self, model, controller):
 		QWidget.__init__(self)
